@@ -27,7 +27,7 @@ mkdir -p $sample_dir/dumped_fastq
 
 for sra in $sample_dir/SRA/*; do
     	SRAentry=$(basename "$sra")
-    	if [ -d $sample_dir/dumped_fastq/$SRAentry ]; then
+    	if [ -d "$sample_dir/dumped_fastq/$SRAentry" ]; then
         	echo -e "Fastq already dumped for $SRAentry, skipping.\n"
 	else
 		fasterq-dump -fp -O $sample_dir/dumped_fastq/$SRAentry $sample_dir/SRA/$SRAentry
