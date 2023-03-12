@@ -29,5 +29,28 @@ for sid in $(find res/samples/dumped_fastq -type f -name *.fastq | sort -u); do
         	fastqc -o $fastqc_dir/$base_sid $sid
         fi
 done
+# Selectively show FastQC results
+read -rp "Would you like to visualize your FastQC results? This is recommended for choosing the most appropriate pipeline for your workflow ('Y'/'N'): " visFastqc   
+case $visFastqc in
+	[Yy]* )
+		# Show fastqc reports in firefox
+       		echo -e "\nOpening firefox for FastQC report visualization...\n"
+		for fastqc_rep in $(find $fastqc_dir/$base_sid -type f -name *.html | sort -u); do
+			firefox fastqc_rep
+		done
+	break;;
+	
+	[Nn]* )
+		# Skip fastqc visualization
+		echo -e "\nSkipping FastQC report visualization...\n"
 
-echo -e "\nPerforming sample"
+	break;;	
+		
+esac
+
+# Different pipelines
+while true; do
+	echo -e "\nWorkflow pipeline menu.\n"
+	echo -e "\nPlease choose an option according to your workflow, or enter 'E' to exit : \n
+		\tPRE-PROCESSING TOOL\tS
+		
