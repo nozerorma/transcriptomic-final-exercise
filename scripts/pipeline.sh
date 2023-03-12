@@ -71,53 +71,102 @@ read -rp "Option: " menuOp
 # for samples found in dumped_fastq dir
 for sid in $(find res/samples/dumped_fastq -type f -name *.fastq | sort -u); do
 	base_sid=$(basename $sid .fastq)
-	NOW=$(date "+%Y-%m-%d")
 
 	case $menuOp in
+		# for basic workflows
 		1 )
-			outdir="aligned/salmon/salmon-$NOW"
+			mkdir -p out/aligned/salmon/salmon log/aligned/salmon/salmon
+			outdir="aligned/salmon/salmon"
 			bash scripts/align.sh salmon $sid out/$outdir log/$outdir 
 		;;
 		2 )
-			outdir="aligned/star/star-$NOW" 
+			mkdir -p out/aligned/star/star log/aligned/star/star
+			outdir="aligned/star/star" 
 			bash scripts/align.sh star $sid out/$outdir log/$outdir 
 		;;
 		3 )
-			outdir="aligned/hisat2/hisat2-$NOW"
+			mkdir -p out/aligned/hisat2/hisat2 log/aligned/hisat2/hisat2
+			outdir="aligned/hisat2/hisat2"
 			bash scripts/align.sh hisat $sid out/$outdir log/$outdir
 		;;
-		4 )
-			outdir="trimmed/cutadapt/star/star-$NOW"
-			bash scripts/align.sh star cutadapt $sid out/$outdir log/$outdir
+
+		# for cutadapt workflows
+		4 | 6 | 8 | 10 )
+			mkdir -p out/trimmed/cutadapt/$base_sid log/trimmed/cutadapt/$base_sid
+			trimdir="trimmed/cutadapt/$base_sid"
+			bash scripts/pre_proc.sh fastq-screen cutadapt $sid out/$outdir log/$outdir
+			case $menuOp in
+				4 )
+					for trimmed_sid in $(find $trimdir -type f -name \*); do
+						mkdir -p out/star/star_cutadapt log/star/star_cutadapt
+						outdir="star/star_cutadapt"
+						bash scripts/align.sh star $sid out/$outdir log/$outdir
+					done
+				;;
+				6 )
+					for trimmed_sid in $(find $trimdir -type f -name \*); do
+						mkdir -p out/hisat2/hisat2_cutadapt log/hisat2/hisat2_cutadapt
+						outdir="hisat2/hisat2_cutadapt"
+						bash scripts/align.sh hisat $sid out/$outdir log/$outdir
+					done
+				;;
+				8 )
+					for trimmed_sid in $(find $trimdir -type f -name \*); do
+						mkdir -p out/salmon/salmon_cutadapt log/salmon/salmon_cutadapt
+						outdir="salmon/salmon_cutadapt"
+						bash scripts/align.sh salmon $sid out/$outdir log/$outdir
+					done
+				;;
+				10 )
+					for trimmed_sid in $(find $trimdir -type f -name \*); do
+						mkdir -p out/kallisto/kallisto_cutadapt log/kallisto/kallisto_cutadapt
+						outdir="kallisto/kallisto_cutadapt"
+						bash scripts/align.sh kallisto $sid out/$outdir log/$outdir
+					done
+				;;
 		;;
-		5 )
-			outdir="trimmed/trimmomatic/star/star-$NOW"
-			bash scripts/align.sh star trimmomatic $sid out/$outdir log/$outdir
-		;;
-		6 )
-			outdir="trimmed/cutadapt/hisat2/hisat2-$NOW"
-			bash scripts/align.sh hisat cutadapt $sid out/$outdir log/$outdir
-		;;
-		7 )
-			outdir="trimmed/trimmomatic/hisat2/hisat2-$NOW"
-			bash scripts/align.sh hisat trimmomatic $sid out/$outdir log/$outdir 
-		;;
-		8 )
-			outdir="trimmed/cutadapt/salmon/salmon-$NOW"
-			bash scripts/align.sh salmon cutadapt $sid out/$outdir log/$outdir
-		;;
-		9 )
-			outdir="trimmed/trimmomatic/salmon/salmon-$NOW"
-			bash scripts/align.sh salmon trimmomatic $sid out/$outdir log/$outdir
-		;;
-		10 )
-			outdir="trimmed/trimmomatic/kallisto/kallisto-$NOW"
-			bash scripts/align.sh kallisto cutadapt $sid out/$outdir log/$outdir
-		;;
-		11 )
-			outdir="trimmed/trimmomatic/kallisto/kallisto-$NOW"
-			bash scripts/align.sh kallisto trimmomatic $sid out/$outdir log/$outdir
+
+		# for trimmomatic workflows
+		5 | 7 | 9 | 11 )
+			mkdir -p out/trimmed/trimmomatic/$base_sid log/trimmed/trimmomatic/$base_sid
+			trimdir="trimmed/trimmomatic/$base_sid"
+			bash scripts/pre_proc.sh fastq-screen trimmomatic $sid out/$outdir log/$outdir
+			case $menuOp in	
+			5 )
+				for trimmed_sid in $(find $trimdir -type f -name \*); do
+					mkdir -p out/star/star_trimmomatic log/star/star_trimmomatic
+					outdir="star/star_trimmomatic"
+					bash scripts/align.sh star $sid out/$outdir log/$outdir
+				done
+			;;
+			7 )
+				for trimmed_sid in $(find $trimdir -type f -name \*); do
+					mkdir -p out/hisat2/hisat2_trimmomatic log/hisat2/hisat2_trimmomatic
+					outdir="hisat2/hisat2_trimmomatic"
+					bash scripts/align.sh  hisat $sid out/$outdir log/$outdir
+				done
+			;;
+			9 )
+				for trimmed_sid in $(find $trimdir -type f -name \*); do
+					mkdir -p out/salmon/salmon_trimmomatic log/salmon/salmon_trimmomatic
+					outdir="salmon/salmon_trimmomatic"
+					bash scripts/align.sh salmon $sid out/$outdir log/$outdir
+				done
+			;;
+			11 )
+				for trimmed_sid in $(find $trimdir -type f -name \*); do				
+					mkdir -p out/kallisto/kallisto_trimmomatic log/kallisto/kallisto_trimmomatic
+					outdir="kallisto/kallisto_trimmomatic"
+					bash scripts/align.sh kallisto $sid out/$outdir log/$outdir
+				done
+			;;
 		;;
 	esac
+
+	# Postprocessing with SAMtools, htseq and deeptools
+	echo -e "\nPerforming post-alignment steps...\n"
+	bash post_proc.sh $sid 
 done
+
+ 
 echo -e "\n\n############ Pipeline finished at $(date +'%H:%M:%S') ##############\n"
