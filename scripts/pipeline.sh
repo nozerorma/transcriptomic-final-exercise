@@ -33,11 +33,7 @@ ___________________________________________________________ ${NC}\n"
 #set -e
 #trap 'echo Error at line $LINENO' ERR
 
-# Download reference genome GRCh38, GTF annotation and reference transcriptome
-# not performed as they are included with the repo
-
-# Download samples
-mkdir -p res/samples	
+# Download samples and references if not exist
 bash scripts/download.sh
 
 # Read quality control
@@ -68,92 +64,123 @@ for f_path in $(find res/samples/dumped_fastq -mindepth 2 -type f -name "*_1.fas
     f_name=$(basename "$f_path")
     r_name=$(basename "$r_path")
     sid=${f_name%_*}  # extract the SRA entry ID from the filename
-    echo "Forward file for $sid: $f_path"
-    echo "Reverse file for $sid: $r_path"
+    echo -e "\nForward file for $sid: $f_path \
+	Reverse file for $sid: $r_path"
 
 	case $menuOp in
 		# for basic workflows
 		1 )
-			mkdir -p out/aligned/salmon/salmon log/aligned/salmon/salmon
-			outdir="aligned/salmon/salmon"
-			bash scripts/align.sh "salmon" "$f_path" "$r_path" "out/$outdir" "log/$outdir" 
+ 			mkdir -p out/aligned/star/star log/aligned/star/star
+			outdir="aligned/star/star"
+			bash scripts/index.sh "STAR"
+			bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
 		;;
 		2 )
-			mkdir -p out/aligned/star/star log/aligned/star/star
-			outdir="aligned/star/star" 
-			bash scripts/align.sh "star" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
-		;;
-		3 )
 			mkdir -p out/aligned/hisat2/hisat2 log/aligned/hisat2/hisat2
 			outdir="aligned/hisat2/hisat2"
-			bash scripts/align.sh "hisat" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+			bash scripts/index.sh "HISAT2"			
+			bash scripts/align.sh "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+		;;
+		3 )
+			mkdir -p out/aligned/salmon/salmon log/aligned/salmon/salmon
+			outdir="aligned/salmon/salmon"
+			bash scripts/index.sh "SALMON"
+			bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir"			
 		;;
 
 		# for cutadapt workflows
 		4 | 6 | 8 | 10 )
+			
 			mkdir -p out/trimmed/cutadapt/$sid log/trimmed/cutadapt/$sid
 			trimdir="trimmed/cutadapt/$sid"
 			bash scripts/pre_proc.sh "fastq-screen" "cutadapt" "$f_path" "$r_path" "out/$trimdir" "log/$trimdir"
+			
 			if [ "$menuOp" == "4" ]; then
+				
+				bash scripts/index.sh "STAR" 
+				
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
 					mkdir -p out/star/star_cutadapt log/star/star_cutadapt
 					outdir="star/star_cutadapt"
-					bash scripts/align.sh "star" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
 				done
 
 			elif [ "$menuOp" == "6" ]; then
+				
+				bash scripts/index.sh "HISAT2"
+
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
 					mkdir -p out/hisat2/hisat2_cutadapt log/hisat2/hisat2_cutadapt
 					outdir="hisat2/hisat2_cutadapt"
-					bash scripts/align.sh "hisat" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+					bash scripts/align.sh "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
 				done
 
 			elif [ "$menuOp" == "8" ]; then
+
+				bash scripts/index.sh "SALMON"
+
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
 					mkdir -p out/salmon/salmon_cutadapt log/salmon/salmon_cutadapt
 					outdir="salmon/salmon_cutadapt"
-					bash scripts/align.sh "salmon" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
 				done
 
 			elif [ "$menuOp" == "10" ]; then
+
+				bash scripts/index.sh "KALLISTO"
+
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
 					mkdir -p out/kallisto/kallisto_cutadapt log/kallisto/kallisto_cutadapt
 					outdir="kallisto/kallisto_cutadapt"
-					bash scripts/align.sh "kallisto" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+					bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
 				done
 			fi
 		;;
 		# for trimmomatic workflows (might remove them, see no point)
 		5 | 7 | 9 | 11 )
+			
 			mkdir -p out/trimmed/trimmomatic/$sid log/trimmed/trimmomatic/$sid
 			trimdir="trimmed/trimmomatic/$sid"
 			bash scripts/pre_proc.sh "fastq-screen" "trimmomatic" "$f_path" "$r_path" "out/$trimdir" "log/$trimdir"
+			
 			if [ "$menuOp" == "5" ]; then
+
+				bash scripts/index.sh "STAR"
+
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
 					mkdir -p out/star/star_trimmomatic log/star/star_trimmomatic
 					outdir="star/star_trimmomatic"
-					bash scripts/align.sh "star" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
 				done
 
 			elif [ "$menuOp" == "7" ]; then
+
+				bash scripts/index.sh "HISAT2"
+
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
 					mkdir -p out/hisat2/hisat2_trimmomatic log/hisat2/hisat2_trimmomatic
 					outdir="hisat2/hisat2_trimmomatic"
-					bash scripts/align.sh  "hisat" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+					bash scripts/align.sh  "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
 				done
 
 			elif [ "$menuOp" == "9" ]; then
+
+				bash scripts/index.sh "SALMON"
+
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
 					mkdir -p out/salmon/salmon_trimmomatic log/salmon/salmon_trimmomatic
 					outdir="salmon/salmon_trimmomatic"
-					bash scripts/align.sh "salmon" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
 				done
 
 			elif [ "$menuOp" == "11" ]; then
+
+				bash scripts/index.sh "KALLISTO"
+
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do				
 					mkdir -p out/kallisto/kallisto_trimmomatic log/kallisto/kallisto_trimmomatic
 					outdir="kallisto/kallisto_trimmomatic"
-					bash scripts/align.sh "kallisto" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
+					bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir"
 				done
 			fi
 		;;
