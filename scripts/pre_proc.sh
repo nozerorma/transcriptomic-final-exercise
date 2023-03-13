@@ -38,8 +38,8 @@ It takes long AND it takes space... (Y/n): " genDownload
     case $isFastqs in
         [Yy]* )
             if [ ! -d "out/qc/fastq_screen/$base_sid" ]; then
-            fastq_screen --conf res/fastq_screen_samples/FastQ_Screen_Genomes/fastq_screen.conf \
-            --aligner bowtie2 --subset 100000 --threads 6 \
+            fastq_screen --conf "res/fastq_screen_samples/FastQ_Screen_Genomes/fastq_screen.conf" \
+            --tag --aligner bowtie2 --subset 100000 --threads 6 \
             --outdir "out/qc/fastq_screen/$base_sid" "$f_path" "$r_path" #>> log/qc/fastq_screen/fastq_screen.log
             fi
             ;;
@@ -58,14 +58,19 @@ if [ "$2" == "cutadapt" ]; then
     if [ -f "$outdir/${f_sid}_trimmed.fastq" ] && [ -f "$outdir/${r_sid}_trimmed.fastq" ]; then
         echo -e "Trim already performed for $f_sid, skipping...\n"
     else
-        cutadapt -o "$outdir"/"$f_sid".fastq -p \
+        cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
+        -a CTGTCTCTTATACACATCT -A CTGTCTCTTATACACATCT \
+        -g TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG -G GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG \
+        -a CTGTCTCTTATACACATCT...AGATGTGTATAAGAGACAG \
+        -a "A{100}" -a TGGAATTCTCGGGTGCCAAGG -a "G{100}" -q 10 \
+        --discard-untrimmed -o "$outdir"/"$f_sid".fastq -p \
         "$outdir"/"$r_sid".fastq \
-        "$f_path" "$r_path" --cores 6 #>> "$logdir"/log.txt
+        "$f_path" "$r_path" --cores 6 >> "$logdir"/log.txt
     fi
-
-elif [ "$2" == "trimmomatic" ]; then
-    trimmomatic PE -phred33 "$f_path" "$r_path" \
-    "$outdir"/"$f_name" "$outdir"/"$f_name"_unpaired \
-    "$outdir"/"$r_name" "$outdir"/"$r_name"_unpaired \
-    TRAILING:30 SLIDINGWINDOW:4:30 #>> "$logdir"/log.txt
 fi
+# elif [ "$2" == "trimmomatic" ]; then
+#     trimmomatic PE -phred33 "$f_path" "$r_path" \
+#     "$outdir"/"$f_name" "$outdir"/"$f_name"_unpaired \
+#     "$outdir"/"$r_name" "$outdir"/"$r_name"_unpaired \
+#     TRAILING:30 SLIDINGWINDOW:4:30 #>> "$logdir"/log.txt
+# fi
