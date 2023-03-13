@@ -3,12 +3,12 @@
 tool=$1
 #threads=$3
 
-mkdir -p "res/index/$tool"
+mkdir -p res/index/"$tool"
 outdir="res/index/$tool"
 ref_gen="data/assembly/reference_grch38/Homo_sapiens.GRCh38.dna*"
 ref_cdna="data/assembly/reference_grch38/Homo_sapiens.GRCh38.cdna*"
 
-echo -e "\nBuilding $tool index...\n"
+echo -e "\nBuilding "$tool" index...\n"
 
 # STAR INDEX
 
@@ -17,8 +17,8 @@ if [ "$1" == "STAR" ]; then
     if [ -f "$outdir/*" ]; then
         echo -e "\Index already built, skipping...\n"
     else
-        STAR 	--runThreadN 4 --runMode genomeGenerate --genomeDir $outdir \
-                --genomeFastaFiles $ref_gen --runRNGseed 1998
+        STAR 	--runThreadN 4 --runMode genomeGenerate --genomeDir "$outdir" \
+                --genomeFastaFiles "$ref_gen" --runRNGseed 1998
 
         echo -e "$tool index built.\n"
     fi
@@ -39,7 +39,7 @@ elif [ "$1" == "SALMON" ]; then
     if [ -f "$outdir/*" ]; then
         echo -e "\Index already built, skipping...\n"
     else
-        echo "echo"
+        salmon index -t $ref_cdna -i $outdir --gencode -p 6
     fi
 
 # KALLISTO INDEX
@@ -48,6 +48,8 @@ elif [ "$1" == "KALISTO" ]; then
     if [ -f "$outdir/*" ]; then
         echo -e "\Index already built, skipping...\n"
     else
-        echo "echo"
+        base_ref_cdna=$(basename "$ref_cdna" .fastq.gz)
+        kallisto --make-unique -i $outdir/${base_ref_cdna}.fa.idx
+
     fi
 fi
