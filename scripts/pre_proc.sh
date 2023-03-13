@@ -50,16 +50,16 @@ It takes long AND it takes space... (Y/n): " genDownload
     esac
 fi
 
-echo -e"
 if [ "$2" == "cutadapt" ]; then
     # mkdir -p $outdir/$f_name
     # mkdir -p $outdir/$r_name
     echo -e "\nRunning cutadapt...\n" 
-    if [ -f "$outdir/$f_sid\_trimmed.fastq" ]; then
-        echo -e "Trim already performed for $f_sid, skipping..."
+    
+    if [ -f "$outdir/${f_sid}_trimmed.fastq" ] && [ -f "$outdir/${r_sid}_trimmed.fastq" ]; then
+        echo -e "Trim already performed for $f_sid, skipping...\n"
     else
-        cutadapt -o "$outdir"/"$f_sid"_trimmed.fastq -p \
-        "$outdir"/"$r_sid"_trimmed.fastq \
+        cutadapt -o "$outdir"/"$f_sid".fastq -p \
+        "$outdir"/"$r_sid".fastq \
         "$f_path" "$r_path" --cores 6 #>> "$logdir"/log.txt
     fi
 
@@ -68,4 +68,4 @@ elif [ "$2" == "trimmomatic" ]; then
     "$outdir"/"$f_name" "$outdir"/"$f_name"_unpaired \
     "$outdir"/"$r_name" "$outdir"/"$r_name"_unpaired \
     TRAILING:30 SLIDINGWINDOW:4:30 #>> "$logdir"/log.txt
-fi"
+fi
