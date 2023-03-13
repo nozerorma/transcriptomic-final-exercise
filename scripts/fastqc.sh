@@ -25,8 +25,8 @@ for sid in $(find res/samples/dumped_fastq -type f -name '*.fastq' | sort -u); d
 done
 
 # Selectively show FastQC results
-read -rp "Would you like to visualize your FastQC results? This \
-is recommended for choosing the most appropriate pipeline for your workflow (Y/n): " visFastqc   
+read -rp "Would you like to visualize your FastQC results? This is \
+recommended for choosing the most appropriate pipeline for your workflow (Y/n): " visFastqc   
 
 case $visFastqc in
 	[Yy]* )
