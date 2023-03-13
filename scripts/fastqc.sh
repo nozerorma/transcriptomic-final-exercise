@@ -35,7 +35,7 @@ case $visFastqc in
 		for sid in ${fastqc_dir}; do
 			for fastqc_rep in $(find $sid -type f -name *.html); do
 				echo $fastqc_rep
-				xdg-open $fastqc_rep 2>/dev/null
+				xdg-open $fastqc_rep >/dev/null 2>&1
 			done
 		done
 		;;
