@@ -1,6 +1,30 @@
-echo -e "\n#### RNA-SEQ PIPELINE for FINAL MODULE PROJECT ####"
-echo -e "Pipeline started at $(date +'%H:%M:%S')"
-echo -e "___________________________________________________________"
+PIPEVERSION="1.0 - sra_automatization_pipeline"
+STARTTIME=`date +'%y-%m-%d %H:%M:%S'`
+RUN_ID=`date +"%Y%m%d%H%M%S"`
+
+RED='\033[0;31m' 
+NC='\033[0m' # No Color
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+
+# This script's design guidelines are based on \
+# the script available at https://github.com/giuliospinozzi/arpir.
+
+echo "
+  +--------------------------------------------------------+
+  |                                                        |
+  |        Illumina Pipeline for SRA automatization        |
+  |                                                        |
+  +--------------------------------------------------------+
+  |  Author:   Miguel Ramon                                |
+  |  Date:     March 2022                                  |
+  |  Contact:  miralnso@proton.me	                       |
+  |  Version:  2.0 - CREO - RNAseq alignment               |
+  +--------------------------------------------------------+
+"
+printf "${GREEN}\n#### RNA-SEQ PIPELINE for FINAL MODULE PROJECT ####${NC}\n\n"
+printf "${YELLOW}Pipeline started at $(date +'%H:%M:%S')
+___________________________________________________________ ${NC}\n"
 
 # Cleanup script
 #bash scripts/cleanup.sh
@@ -99,7 +123,7 @@ for f_path in $(find res/samples/dumped_fastq -mindepth 2 -type f -name "*_1.fas
 				done
 			fi
 		;;
-		# for trimmomatic workflows
+		# for trimmomatic workflows (might remove them, see no point)
 		5 | 7 | 9 | 11 )
 			mkdir -p out/trimmed/trimmomatic/$sid log/trimmed/trimmomatic/$sid
 			trimdir="trimmed/trimmomatic/$sid"
