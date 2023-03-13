@@ -12,10 +12,12 @@ f_sid=$(basename "$f_name" .fastq)
 r_sid=$(basename "$r_name" .fastq)
 
 if [ "$1" == "fastq-screen" ]; then
+    
     mkdir -p "log/qc/fastq_screen"
     mkdir -p "out/qc/fastq_screen"
     echo -e "\nRunning FastQScreen...\n"
-    # a esto le tengo que dar la vuelta
+    
+    # a esto le tengo que dar la vuelta, redundante
     read -rp "Would you like to download genome indexes from database? \
 It takes long AND it takes space... (Y/n): " genDownload
     case $genDownload in
@@ -37,7 +39,7 @@ It takes long AND it takes space... (Y/n): " genDownload
     read -rp "Would you like to run FastQScreen analysis? (Y/n): " isFastqs
     case $isFastqs in
         [Yy]* )
-            if [ ! -d "out/qc/fastq_screen/$base_sid" ]; then
+            if [ ! -d "out/qc/fastq_screen/$base_sid" ]; then # probablemente debería hacerlo tb con -f
             fastq_screen --conf "res/fastq_screen_samples/FastQ_Screen_Genomes/fastq_screen.conf" \
             --tag --aligner bowtie2 --subset 100000 --threads 6 \
             --outdir "out/qc/fastq_screen/$base_sid" "$f_path" "$r_path" #>> log/qc/fastq_screen/fastq_screen.log
@@ -51,26 +53,30 @@ It takes long AND it takes space... (Y/n): " genDownload
 fi
 
 if [ "$2" == "cutadapt" ]; then
-    # mkdir -p $outdir/$f_name
-    # mkdir -p $outdir/$r_name
+    
     echo -e "\nRunning cutadapt...\n" 
     
     if [ -f "$outdir/${f_sid}_trimmed.fastq" ] && [ -f "$outdir/${r_sid}_trimmed.fastq" ]; then
         echo -e "Trim already performed for $f_sid, skipping...\n"
     else
+        #took out -q 10 and --discard-untrimmed until further notice
         cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
-        -a CTGTCTCTTATACACATCT -A CTGTCTCTTATACACATCT \
-        -g TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG -G GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG \
-        -a CTGTCTCTTATACACATCT...AGATGTGTATAAGAGACAG \
-        -a "A{100}" -a TGGAATTCTCGGGTGCCAAGG -a "G{100}" -q 10 \
-        --discard-untrimmed -o "$outdir"/"$f_sid".fastq -p \
-        "$outdir"/"$r_sid".fastq \
-        "$f_path" "$r_path" --cores 6 >> "$logdir"/log.txt
+            -a CTGTCTCTTATACACATCT -A CTGTCTCTTATACACATCT \
+            -g TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG -G GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG \
+            -a CTGTCTCTTATACACATCT...AGATGTGTATAAGAGACAG -a TGGAATTCTCGGGTGCCAAGG \
+            -a "G{100}" -g "G{100}" -a "A{100}" -g "A{100}" -q 20 \
+            -o "$outdir/${f_sid}_trimmed.fastq" -p "$outdir/${r_sid}_trimmed.fastq" \
+            "$f_path" "$r_path" --cores 6 >> "$logdir"/log.txt
     fi
-fi
+
+# Uncomment and modify conveniently for using Trimmomatic
 # elif [ "$2" == "trimmomatic" ]; then
+    
 #     trimmomatic PE -phred33 "$f_path" "$r_path" \
-#     "$outdir"/"$f_name" "$outdir"/"$f_name"_unpaired \
-#     "$outdir"/"$r_name" "$outdir"/"$r_name"_unpaired \
-#     TRAILING:30 SLIDINGWINDOW:4:30 #>> "$logdir"/log.txt
-# fi
+#             "$outdir"/"$f_name" "$outdir"/"$f_name"_unpaired \
+#             "$outdir"/"$r_name" "$outdir"/"$r_name"_unpaired \
+#             TRAILING:30 SLIDINGWINDOW:4:30 >> "$logdir"/log.txt
+
+fi
+
+# read -a "Would you like to re-run fastqc for your trimmed samples? (Y/n) " runfastqc
