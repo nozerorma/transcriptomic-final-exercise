@@ -9,7 +9,11 @@
 !generateInput/
 !results/
 !scripts/
-res/
-data/
-out/
-log/
+res/*
+!res/.gitkeep
+data/*
+!res/.gitkeep
+out/*
+!out/.gitkeep
+log/*
+!log/.gitkeep
