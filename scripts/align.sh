@@ -48,6 +48,7 @@ if [ "$1" == "STAR" ]; then
 			--outFileNamePrefix $outdir/$base_sid \
 			--outSAMtype BAM SortedByCoordinate 
 		
+		# add more params for statistics
 		bam_file=$(find $outdir -type f -name "*.bam")
 		samtools index $bam_file #> $logdir/$tool.log # - (necessary?)
 			# index bam here with samtools
@@ -66,6 +67,8 @@ elif [ "$1" == "HISAT2" ]; then
 		hisat2 -p 6 --dta -x $index_dir -1 $f_path -2 $r_path \
 		-S $outdir/$base_sid/$base_sid.sam 
 		
+		
+		# add more params for statistics
 		samtools view -bS $outdir/$base_sid/$base_sid.sam > $base_sid.bam | \
 		samtools sort --write-index #> $logdir/$tool.log 
 	
@@ -77,15 +80,20 @@ elif [ "$1" == "HISAT2" ]; then
 # overview from https://salmon.readthedocs.io/en/latest/salmon.html
 # SALMON (mapping-based mode, using GTF annotations)
 # -l set as A for automatic guessing of strandness, change accordingly
-elif [ "$1" == "HISAT2" ]; then
+elif [ "$1" == "SALMON" ]; then
 	if [ "$(ls -A $outdir)" ]; then
 		echo -e "Alignment already performed for $base_sid, skipping alignment.\n" 
 	else
 		salmon quant -i $index_dir -l A -1 $f_path -2 $r_path --validateMappings \
-			-o $outdir/$base_sid -p 6 > $logdir/$tool.log
+			-o $outdir/$base_sid -g $ref_gtf -p 6 #> $logdir/$tool.log
+	fi
+# KALLISTO
+elif [ "$1" == "KALLISTO" ]; then
+	if [ "$(ls -A $outdir)" ]; then
+		echo -e "Alignment already performed for $base_sid, skipping alignment.\n" 
+	else
+		kallisto quant --i $index_dir --bias --fusion \
+		$f_path $r_path -o $outdir/$base_sid --pseudobam --genomebam \
+		--gtf $ref_gtf -t 6 
 	fi
 fi
-# KALLISTO
-
-### SPLIT ALIGNERS
-# HISAT2
