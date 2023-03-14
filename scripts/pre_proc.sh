@@ -17,16 +17,14 @@ if [ "$1" == "fastq-screen" ]; then
     mkdir -p "out/qc/fastq_screen"
     echo -e "\nRunning FastQScreen...\n"
     
-    # a esto le tengo que dar la vuelta, redundante
+    # a esto le tengo que dar la vuelta, redundante ("$(ls -A $outdir)")
     read -rp "Would you like to download genome indexes from database? \
 It takes long AND it takes space... (Y/n): " genDownload
     case $genDownload in
         [Yy]* )
             if [ ! -d "res/fastq_screen_samples" ]; then
-                echo -e "\nDownloading genomes...\n"
-                #echo -e "\nFastQC log as of $(date +'%x                %H:%M:%S')" >> log/qc/fastq_screen/fastq_screen.log
-                #echo -e "___________________________________________________________\n">> log/qc/fastq_screen/fastq_screen.log 
-                fastq_screen --get_genomes --outdir "res/fastq_screen_samples" #>> log/qc/fastq_screen/fastq_screen.log
+                echo -e "\nDownloading genomes...\n" 
+                fastq_screen --get_genomes --outdir "res/fastq_screen_samples" > log/qc/fastq_screen/fastq_screen.log
             else
                 echo -e "\nGenomes already present in folder, skipping...\n"
             fi
@@ -42,7 +40,7 @@ It takes long AND it takes space... (Y/n): " genDownload
             if [ ! -d "out/qc/fastq_screen/$base_sid" ]; then # probablemente debería hacerlo tb con -f
             fastq_screen --conf "res/fastq_screen_samples/FastQ_Screen_Genomes/fastq_screen.conf" \
             --tag --aligner bowtie2 --subset 100000 --threads 6 \
-            --outdir "out/qc/fastq_screen/$base_sid" "$f_path" "$r_path" #>> log/qc/fastq_screen/fastq_screen.log
+            --outdir "out/qc/fastq_screen/$base_sid" "$f_path" "$r_path" > log/qc/fastq_screen/fastq_screen.log
             fi
             ;;
 
@@ -56,7 +54,7 @@ if [ "$2" == "cutadapt" ]; then
     
     echo -e "\nRunning cutadapt...\n" 
     
-    if [ -f "$outdir/${f_sid}_trimmed.fastq" ] && [ -f "$outdir/${r_sid}_trimmed.fastq" ]; then
+    if [ "$(ls -A $outdir)" ]; then
         echo -e "Trim already performed for $f_sid, skipping...\n"
     else
         #took out -q 10 and --discard-untrimmed until further notice
@@ -66,7 +64,7 @@ if [ "$2" == "cutadapt" ]; then
             -a CTGTCTCTTATACACATCT...AGATGTGTATAAGAGACAG -a TGGAATTCTCGGGTGCCAAGG \
             -a "G{100}" -g "G{100}" -a "A{100}" -g "A{100}" -q 20 \
             -o "$outdir/${f_sid}_trimmed.fastq" -p "$outdir/${r_sid}_trimmed.fastq" \
-            "$f_path" "$r_path" --cores 6 >> "$logdir"/log.txt
+            "$f_path" "$r_path" --cores 6 > "$logdir"/log.txt
     fi
 
 # Uncomment and modify conveniently for using Trimmomatic
