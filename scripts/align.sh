@@ -1,31 +1,91 @@
 #### ALIGNMENT SCRIPT ####
 
 tool=$1
-sid=$2
-outdir=$3
-logdir=$4
+f_path=$2
+r_path=$3
+outdir=$4
+logdir=$5
+workflow=$6
+
+f_name=$(basename "$f_path")
+r_name=$(basename "$r_path")
+base_sid=$(basename "$f_path" | cut -d"_" -f1)
+f_sid=$(basename "$f_name" .fastq)
+r_sid=$(basename "$r_name" .fastq)
+
+# This section should be changed accordingly
+# It would be nice of me to glob, but I don't seem to be able
+ref_gen="data/assembly/reference_grch38/Homo_sapiens.GRCh38.dna.chromosome.21.fa"
+ref_cdna="data/assembly/reference_grch38/Homo_sapiens.GRCh38.cdna.all.fa.gz"
+ref_gtf="data/assembly/reference_grch38/Homo_sapiens.GRCh38.109.chr21.gtf"
+
+trimmed_dir="out/trimmed/$workflow"
+untrimmed_dir="res/samples/dumped_fastq" # falta completar
+index_dir="res/index/$tool"
+
+# First lets see what workflow we are working with
+
+sample_dir=0
+
+if [ $workflow == "untrimmed" ]; then
+	sample_dir=$untrimmed_dir
+
+elif [ $workflow == "cutadapt" ] or [ $workflow == "trimmomatic" ] ; then
+	sample_dir=$trimmed_dir
+fi
+
+echo -e "\nAligning $base_sid to reference with $tool...\n"
+
+# overview from https://www.reneshbedre.com/blog/star-aligner.html#mapping-reads-to-genome
+# STAR
+if [ "$1" == "STAR" ]; then
+	if [ "$(ls -A $outdir)" ]; then
+		echo -e "Alignment already performed for $base_sid, skipping alignment.\n"   
+
+	else
+		STAR --runThreadN 6 --readFilesIn $f_path $r_path  \
+			--genomeDir $index_dir --outReadsUnmapped Fastx  \
+			--outFileNamePrefix $outdir/$base_sid \
+			--outSAMtype BAM SortedByCoordinate 
+		
+		bam_file=$(find $outdir -type f -name "*.bam")
+		samtools index $bam_file #> $logdir/$tool.log # - (necessary?)
+			# index bam here with samtools
+
+		echo -e "\nSample $base_sid aligned using $tool.\n"
+
+	fi
+
+# overview from https://bioinfo-dirty-jobs.github.io/rana2//lectures/07.rnaseq_hisat2/
+# HISAT2
+elif [ "$1" == "HISAT2" ]; then
+	if [ "$(ls -A $outdir)" ]; then
+		echo -e "Alignment already performed for $base_sid, skipping alignment.\n"   
+
+	else
+		hisat2 -p 6 --dta -x $index_dir -1 $f_path -2 $r_path \
+		-S $outdir/$base_sid/$base_sid.sam 
+		
+		samtools view -bS $outdir/$base_sid/$base_sid.sam > $base_sid.bam | \
+		samtools sort --write-index #> $logdir/$tool.log 
+	
+	fi
 
 ## ALIGNMENT
 ### PSEUDO-TOOLS
-# SALMON
 
+# overview from https://salmon.readthedocs.io/en/latest/salmon.html
+# SALMON (mapping-based mode, using GTF annotations)
+# -l set as A for automatic guessing of strandness, change accordingly
+elif [ "$1" == "HISAT2" ]; then
+	if [ "$(ls -A $outdir)" ]; then
+		echo -e "Alignment already performed for $base_sid, skipping alignment.\n" 
+	else
+		salmon quant -i $index_dir -l A -1 $f_path -2 $r_path --validateMappings \
+			-o $outdir/$base_sid -p 6 > $logdir/$tool.log
+	fi
+fi
 # KALLISTO
 
 ### SPLIT ALIGNERS
 # HISAT2
-
-# STAR
-
-
-if [ -d $starDir/$baseAlignSid ]
-then
-	echo -e "Sequence decontamination already performed for $baseAlignSid, skipping alignment.\n"   
-else
-	echo -e "\n### Default number of threads is set to 8, please modify as required. ###\n" 
-        echo -e "Decontaminating sample $baseAlignSid...\n"
-	STAR\
-        	--runThreadN 8 --genomeDir res/contaminants_idx \
-                --outReadsUnmapped Fastx --readFilesIn $trimSid \
-                --outFileNamePrefix $starDir/$baseAlignSid/
-	echo -e "\nSample $baseAlignSid decontaminated.\n"
-fi
