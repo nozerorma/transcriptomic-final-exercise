@@ -57,7 +57,7 @@ ADVANCED WORKFLOWS INCLUDING PREPROCESSING\n
 \tWORKFLOW 11 (Toolset: FastQScreen, Trimmomatic, Kallisto)\n"
 
 read -rp "Option: " menuOp
-
+# de repente me ha cambiado la dirección de analisis por la cara!
 # for samples found in dumped_fastq dir
 for f_path in $(find res/samples/dumped_fastq -mindepth 2 -type f -name "*_1.fastq"); do
     r_path=${f_path/_1/_2}  # replace _1 with _2 in the filename to get the reverse file path
@@ -66,7 +66,7 @@ for f_path in $(find res/samples/dumped_fastq -mindepth 2 -type f -name "*_1.fas
     sid=${f_name%_*}  # extract the SRA entry ID from the filename
     echo -e "\nForward file for $sid: $f_path \
 	Reverse file for $sid: $r_path"
-
+	
 	case $menuOp in
 		# for basic workflows
 		1 )
