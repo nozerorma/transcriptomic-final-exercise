@@ -19,7 +19,7 @@ for sid in $(find res/samples/dumped_fastq -type f -name '*.fastq' | sort -u); d
 		echo "Started analysis of $sid"
 		#echo -e "\nFastQC log as of $(date +'%x                %H:%M:%S')" >> log/qc/fastqc/$base_sid.log
 		#echo -e "___________________________________________________________\n">> log/qc/fastqc/$base_sid.log 
-		fastqc -o "$fastqc_dir"/"$base_sid" "$sid" >> log/qc/fastqc/$base_sid.log
+		fastqc -o "$fastqc_dir"/"$base_sid" "$sid" > log/qc/fastqc/$base_sid.log
 	fi
 
 done
