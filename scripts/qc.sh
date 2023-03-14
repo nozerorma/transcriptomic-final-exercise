@@ -1,4 +1,4 @@
-# FASTQC script
+# QC script
 
 # maybe insert logs?
 
