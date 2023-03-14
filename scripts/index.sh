@@ -45,13 +45,13 @@ elif [ "$1" == "SALMON" ]; then
     fi
 
 # KALLISTO INDEX
-elif [ "$1" == "KALISTO" ]; then
+elif [ "$1" == "KALLISTO" ]; then
     
     if [ "$(ls -A $outdir)" ]; then
         echo -e "Index already built, skipping...\n"
     else
         base_ref_cdna=$(basename $ref_cdna .fa.gz)
-        kallisto --make-unique -i $outdir/${base_ref_cdna}.fa.idx > $logdir/log.txt
+        kallisto index -i $outdir/${base_ref_cdna}.fa.idx $ref_cdna > $logdir/log.txt
 
     fi
 fi
