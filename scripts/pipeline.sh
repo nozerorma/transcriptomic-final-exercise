@@ -18,20 +18,17 @@ echo "
   +--------------------------------------------------------+
   |  Author:   Miguel Ramon                                |
   |  Date:     March 2022                                  |
-  |  Contact:  miralnso@proton.me	                       |
-  |  Version:  2.0 - CREO - RNAseq alignment               |
+  |  Contact:  miralnso@proton.me	                   |
+  |  Version:  1.0 - SRA - RNAseq alignment                |
   +--------------------------------------------------------+
 "
 printf "${GREEN}\n#### RNA-SEQ PIPELINE for FINAL MODULE PROJECT ####${NC}\n\n"
 printf "${YELLOW}Pipeline started at $(date +'%H:%M:%S')
 ___________________________________________________________ ${NC}\n"
 
-# Cleanup script
-#bash scripts/cleanup.sh
-
 # Stop execution when having a non-zero status and trap errors giving line number
-#set -e
-#trap 'echo Error at line $LINENO' ERR
+set -e
+trap 'printf ${RED}Error at line $LINENO${NC}' ERR
 
 # Download samples and references if not exist
 bash scripts/download.sh
@@ -50,6 +47,7 @@ echo -e "
 \tWORKFLOW 5 (Toolset: FastQScreen, Cutadapt, HISAT2)\n
 \tWORKFLOW 6 (Toolset: FastQScreen, Cutadapt, Salmon)\n
 \tWORKFLOW 7 (Toolset: FastQScreen, Cutadapt, Kallisto)\n
+\t(Trimmomatic workflows not working as of now)\n
 \tWORKFLOW 8 (Toolset: FastQScreen, Trimmomatic, STAR)\n
 \tWORKFLOW 9 (Toolset: FastQScreen, Trimmomatic, HISAT2)\n
 \tWORKFLOW 10 (Toolset: FastQScreen, Trimmomatic, Salmon)\n
