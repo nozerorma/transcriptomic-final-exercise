@@ -57,7 +57,7 @@ if [ "$1" == "run" ]; then
 			mkdir -p $fastqscreen_dir/$cut_sid
 			mkdir -p log/qc
 			fastq_screen --conf "$screen_gen/fastq_screen.conf" \
-				--tag --aligner bowtie2 --subset 100000 --threads 6 \
+				--tag --aligner bowtie2 --subset 100000 --threads 14 \
 				--outdir "$fastqscreen_dir/$cut_sid" $sid 2> log/qc/fastqscreen.log
 		fi
 	fi

@@ -23,7 +23,7 @@ if [ "$1" == "STAR" ]; then
         echo -e "Index already built, skipping...\n"
     else
         # change genomeSAindexNbases to 11 according to own program's advise, due to ref length
-        STAR 	--runThreadN 6 --runMode genomeGenerate --genomeDir $outdir \
+        STAR 	--runThreadN 14 --runMode genomeGenerate --genomeDir $outdir \
                 --genomeFastaFiles $ref_gen --runRNGseed 1998 --genomeSAindexNbases 11 > $logdir/$tool.log
 
         echo -e "$tool index built.\n"
@@ -36,7 +36,7 @@ elif [ "$1" == "HISAT2" ]; then
     if [ "$(ls -A $outdir)" ]; then
         echo -e "Index already built, skipping...\n"
     else
-        hisat2-build -p 6 --seed 1998 $ref_gen $outdir/ > $logdir/$tool.log
+        hisat2-build -p 14 --seed 1998 $ref_gen $outdir/HISAT2 > $logdir/$tool.log
     fi
 
 # SALMON INDEX
@@ -45,7 +45,7 @@ elif [ "$1" == "SALMON" ]; then
     if [ "$(ls -A $outdir)" ]; then
         echo -e "Index already built, skipping...\n"
     else
-        salmon index -t $ref_cdna -i $outdir --gencode -p 6 > $logdir/$tool.log
+        salmon index -t $ref_cdna -i $outdir --gencode -p 14 > $logdir/$tool.log
     fi
 
 # KALLISTO INDEX
