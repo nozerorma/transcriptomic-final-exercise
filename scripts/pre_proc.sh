@@ -19,6 +19,9 @@ if [ "$1" == "cutadapt" ]; then
         echo -e "Trim already performed for $f_sid, skipping...\n"
     
     else
+        # adapters infered from most common Illumina, listed in here
+        # https://tinyurl.com/illumina-adapters
+        # https://tinyurl.com/illumina-adapters-2
         cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
             -a CTGTCTCTTATACACATCT -A CTGTCTCTTATACACATCT \
             -g TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG -G GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG \
@@ -29,19 +32,16 @@ if [ "$1" == "cutadapt" ]; then
     fi
 fi
 
-read -rp "Would you like to re-run QC repor for your trimmed samples? (Y/n) " runqc
+# Re-run quality control
+read -rp "Would you like to re-run QC report for your trimmed samples? (Y/n) " runqc
 
-for trimmed_sid in $(find $outdir -type f -name "*_trimmed.fastq")
+for trimmed_sid in $(find $outdir -type f -name "*_trimmed.fastq");do
     case $runqc in
         [Yy]* )
-            scripts/qc.sh $trimmed_sid "out/qc/fastqc" "out/qc/fastq_screen"
-        ;;
-        [Nn]* )
-            echo -e "\nSkipping QC analysis...\n" 
+            bash scripts/qc.sh run $trimmed_sid "out/qc/fastqc" "out/qc/fastq_screen"
         ;;
 	esac
 done
-
 
 # Uncomment and modify conveniently for using Trimmomatic
 # elif [ "$1" == "trimmomatic" ]; then
@@ -53,3 +53,4 @@ done
 
 
 # 
+
