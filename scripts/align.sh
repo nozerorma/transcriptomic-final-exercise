@@ -30,7 +30,7 @@ sample_dir=0
 if [ $workflow == "untrimmed" ]; then
 	sample_dir=$untrimmed_dir
 
-elif [ $workflow == "cutadapt" ] or [ $workflow == "trimmomatic" ] ; then
+elif [ $workflow == "cutadapt" ] || [ $workflow == "trimmomatic" ] ; then
 	sample_dir=$trimmed_dir
 fi
 
@@ -39,7 +39,7 @@ echo -e "\nAligning $base_sid to reference with $tool...\n"
 # overview from https://www.reneshbedre.com/blog/star-aligner.html#mapping-reads-to-genome
 # STAR
 if [ "$1" == "STAR" ]; then
-	if [ "$(ls -A $outdir)" ]; then
+	if [ "$(ls -A $outdir/$base_sid)" ]; then
 		echo -e "Alignment already performed for $base_sid, skipping alignment.\n"   
 
 	else
@@ -60,7 +60,7 @@ if [ "$1" == "STAR" ]; then
 # overview from https://bioinfo-dirty-jobs.github.io/rana2//lectures/07.rnaseq_hisat2/
 # HISAT2
 elif [ "$1" == "HISAT2" ]; then
-	if [ "$(ls -A $outdir)" ]; then
+	if [ "$(ls -A $outdir/$base_sid)" ]; then
 		echo -e "Alignment already performed for $base_sid, skipping alignment.\n"   
 
 	else
@@ -81,7 +81,7 @@ elif [ "$1" == "HISAT2" ]; then
 # SALMON (mapping-based mode, using GTF annotations)
 # -l set as A for automatic guessing of strandness, change accordingly
 elif [ "$1" == "SALMON" ]; then
-	if [ "$(ls -A $outdir)" ]; then
+	if [ "$(ls -A $outdir/$base_sid)" ]; then
 		echo -e "Alignment already performed for $base_sid, skipping alignment.\n" 
 	else
 		salmon quant -i $index_dir -l A -1 $f_path -2 $r_path --validateMappings \
@@ -89,7 +89,7 @@ elif [ "$1" == "SALMON" ]; then
 	fi
 # KALLISTO
 elif [ "$1" == "KALLISTO" ]; then
-	if [ "$(ls -A $outdir)" ]; then
+	if [ "$(ls -A $outdir/$base_sid)" ]; then
 		echo -e "Alignment already performed for $base_sid, skipping alignment.\n" 
 	else
 		kallisto quant --i $index_dir --bias --fusion \
