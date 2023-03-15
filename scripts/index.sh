@@ -54,8 +54,8 @@ elif [ "$1" == "KALLISTO" ]; then
     if [ "$(ls -A $outdir)" ]; then
         echo -e "Index already built, skipping...\n"
     else
-        base_ref_cdna=$(basename $ref_cdna .fa.gz)
-        kallisto index -i $outdir/${base_ref_cdna}.fa.idx $ref_cdna > $logdir/$tool.log
+        base_ref_cdna=$(basename $ref_cdna .gz)
+        kallisto index -i $outdir/${base_ref_cdna}.idx $ref_cdna > $logdir/$tool.log
 
     fi
 fi

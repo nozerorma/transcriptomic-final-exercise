@@ -88,11 +88,13 @@ elif [ "$1" == "SALMON" ]; then
 			-o $outdir/$base_sid -g $ref_gtf -p 6 #> $logdir/$tool.log
 	fi
 # KALLISTO
+# tema de los gtf en ambos, no se si sin meterlo en idx tiene sentido
 elif [ "$1" == "KALLISTO" ]; then
 	if [ "$(ls -A $outdir/$base_sid)" ]; then
 		echo -e "Alignment already performed for $base_sid, skipping alignment.\n" 
 	else
-		kallisto quant --i $index_dir --bias --fusion \
+		base_ref_cdna=$(basename $ref_cdna .gz)
+		kallisto quant -i $index_dir/$base_ref_cdna.idx --bias --fusion \
 		$f_path $r_path -o $outdir/$base_sid --pseudobam --genomebam \
 		--gtf $ref_gtf -t 6 
 	fi
