@@ -1,5 +1,5 @@
-mkdir -p res/samples	
-mkdir -p data/assembly/reference_grch38
+mkdir -p "res/samples"	
+mkdir -p "data/assembly/reference_grch38"
 sample_dir="res/samples"
 genome_dir="data/assembly/reference_grch38"
 
@@ -44,35 +44,24 @@ while true; do
 done
 
 
-
-
 # QC assay
 
 read -rp "Would you like to perform a QC analysis (FastQC and FastQScreen)? (Y/n): " performQC
 
-# por alguna razón (el array) hace esto, limpiar
-# basename: missing operand
-# Try 'basename --help' for more information.
+for SRAentry in "${SRAentries[@]}"; do
+	for sid in $(find $sample_dir/dumped_fastq/$SRAentry -type f -name '*.fastq'); do
+		base_sid=$(basename $sid | cut -d"_" -f1)
 
-# Performing QC analysis...
-
-# FastQC analysis already performed for , skipping analysis.
-
-# FastQScreen analysis already performed for , skipping analysis.
-
-
-for sid in $(find $sample_dir/dumped_fastq -type f -name '*.fastq' | sort -u); do
-	base_sid=$(basename $sid | cut -d"_" -f1)
-		if [[ "${SRAentries[@]}" =~ "$base_sid" ]]; then
+		if [ "$(ls -A $sample_dir/dumped_fastq/$base_sid)" ]; then
 			case $performQC in
 				[Yy]* )
-					bash scripts/qc.sh run $sid "out/qc/fastqc" "out/qc/fastq_screen"
+					bash scripts/qc.sh "run" $sid "out/qc/fastqc" "out/qc/fastq_screen"
 				;;
 				[Nn]* )
-					echo -e "\nSkipping QC analysis...\n" 
+					echo -e "\nSkipping QC analysis...\n"
+					break 
 				;;
 			esac
 		fi
+	done
 done
-
-bash scripts/qc.sh vis
