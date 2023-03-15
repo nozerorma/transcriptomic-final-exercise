@@ -28,13 +28,13 @@ ___________________________________________________________ ${NC}\n"
 
 # Stop execution when having a non-zero status and trap errors giving line number
 set -e
-trap 'printf ${RED}Error at line $LINENO${NC}' ERR
+trap 'printf "${RED}Error at line $LINENO${NC}"' ERR
 
 # Download samples and references if not exist
 bash scripts/download.sh
 
 # Different pipelines for different workflows
-printf "${GREEEN}\nWORKFLOW PIPELINE MENU\n${NC}"
+printf "${GREEN}\nWORKFLOW PIPELINE MENU\n${NC}"
 
 printf "${YELLOW}BASIC WORKFLOWS FOR HIGH QUALITY READS, NO PRE-PROCESSING\n${NC}"
 echo -e "
@@ -185,7 +185,7 @@ Reverse file for $sid: $r_path"
 	
 	# Postprocessing with SAMtools, htseq and deeptools
 	echo -e "\nPerforming post-alignment steps...\n"
-	bash post_proc.sh $sid 
+	#bash post_proc.sh $sid 
 
 done
 
