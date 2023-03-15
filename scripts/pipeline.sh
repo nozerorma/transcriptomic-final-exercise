@@ -72,19 +72,19 @@ Reverse file for $sid: $r_path"
 	case $menuOp in
 		# for basic workflows
 		1 )
- 			mkdir -p out/aligned/star/$sid/$RUN_ID log/aligned/star/$sid/$RUN_ID
+ 			mkdir -p "out/aligned/star/$sid/$RUN_ID" "log/aligned/star/$sid/$RUN_ID"
 			outdir="aligned/star/$sid/$RUN_ID"
 			bash scripts/index.sh "STAR"
 			bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "untrimmed"
 		;;
 		2 )
-			mkdir -p out/aligned/hisat2/$sid/$RUN_ID log/aligned/hisat2/$sid/$RUN_ID
+			mkdir -p "out/aligned/hisat2/$sid/$RUN_ID" "log/aligned/hisat2/$sid/$RUN_ID"
 			outdir="aligned/hisat2/$sid/$RUN_ID"
 			bash scripts/index.sh "HISAT2"			
 			bash scripts/align.sh "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "untrimmed"
 		;;
 		3 )
-			mkdir -p out/aligned/salmon/$sid/$RUN_ID log/aligned/salmon/$sid/$RUN_ID
+			mkdir -p "out/aligned/salmon/$sid/$RUN_ID" "log/aligned/salmon/$sid/$RUN_ID"
 			outdir="aligned/salmon/$sid/$RUN_ID"
 			bash scripts/index.sh "SALMON"
 			bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "untrimmed"			
@@ -102,7 +102,7 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "STAR" 
 				
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/aligned/star_cutadapt/$sid/$RUN_ID log/aligned/star_cutadapt/$sid/$RUN_ID
+					mkdir -p "out/aligned/star_cutadapt/$sid/$RUN_ID" "log/aligned/star_cutadapt/$sid/$RUN_ID"
 					outdir="aligned/star_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
 				done
@@ -112,7 +112,7 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "HISAT2"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/aligned/hisat2_cutadapt/$sid/$RUN_ID log/aligned/hisat2_cutadapt/$sid/$RUN_ID
+					mkdir -p "out/aligned/hisat2_cutadapt/$sid/$RUN_ID" "log/aligned/hisat2_cutadapt/$sid/$RUN_ID"
 					outdir="aligned/hisat2_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
 				done
@@ -122,7 +122,7 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "SALMON"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/aligned/salmon_cutadapt/$sid/$RUN_ID log/aligned/salmon_cutadapt/$sid/$RUN_ID
+					mkdir -p "out/aligned/salmon_cutadapt/$sid/$RUN_ID" "log/aligned/salmon_cutadapt/$sid/$RUN_ID"
 					outdir="aligned/salmon_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
 				done
@@ -132,7 +132,7 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "KALLISTO"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/aligned/kallisto_cutadapt/$sid/$RUN_ID log/aligned/kallisto_cutadapt/$sid/$RUN_ID
+					mkdir -p "out/aligned/kallisto_cutadapt/$sid/$RUN_ID" "log/aligned/kallisto_cutadapt/$sid/$RUN_ID"
 					outdir="aligned/kallisto_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
 				done
@@ -150,7 +150,7 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "STAR"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir out/aligned/star_trimmomatic/$sid/$RUN_ID log/aligned/star_trimmomatic/$sid/$RUN_ID
+					mkdir "out/aligned/star_trimmomatic/$sid/$RUN_ID" "log/aligned/star_trimmomatic/$sid/$RUN_ID"
 					outdir="aligned/star_trimmomatic/$sid/$RUN_ID"
 					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
@@ -160,7 +160,7 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "HISAT2"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/aligned/hisat2_trimmomatic/$sid/$RUN_ID log/aligned/hisat2_trimmomatic/$sid/$RUN_ID
+					mkdir -p "out/aligned/hisat2_trimmomatic/$sid/$RUN_ID" "log/aligned/hisat2_trimmomatic/$sid/$RUN_ID"
 					outdir="aligned/hisat2_trimmomatic/$sid/$RUN_ID"
 					bash scripts/align.sh  "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
@@ -170,7 +170,7 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "SALMON"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/aligned/salmon_trimmomatic/$sid/$RUN_ID log/aligned/salmon_trimmomatic/$sid/$RUN_ID
+					mkdir -p "out/aligned/salmon_trimmomatic/$sid/$RUN_ID" "log/aligned/salmon_trimmomatic/$sid/$RUN_ID"
 					outdir="aligned/salmon_trimmomatic/$sid/$RUN_ID"
 					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
@@ -180,7 +180,7 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "KALLISTO"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do				
-					mkdir -p out/aligned/kallisto_trimmomatic/$sid/$RUN_ID log/aligned/kallisto_trimmomatic/$sid/$RUN_ID
+					mkdir -p "out/aligned/kallisto_trimmomatic/$sid/$RUN_ID" "log/aligned/kallisto_trimmomatic/$sid/$RUN_ID"
 					outdir="aligned/kallisto_trimmomatic/$sid/$RUN_ID"
 					bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
