@@ -1,3 +1,5 @@
+RUN_ID=$1
+
 mkdir -p "res/samples"	
 mkdir -p "data/assembly/reference_grch38"
 sample_dir="res/samples"
@@ -18,7 +20,8 @@ while true; do
     read -a SRAentries  # Read a line of input and split it into an array of accessions
     if [[ "${SRAentries[0]}" =~ ^[SsNn0]$ ]]; then
         # If the first element is 'S', 's', 'N', 'n' or '0', exit the loop
-        break
+        exit 1
+		
     else
 		
         for SRAentry in "${SRAentries[@]}"; do

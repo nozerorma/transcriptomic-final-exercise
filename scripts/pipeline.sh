@@ -22,36 +22,41 @@ echo "
   |  Version:  1.0 - SRA - RNAseq alignment                |
   +--------------------------------------------------------+
 "
-printf "${GREEN}\n#### RNA-SEQ PIPELINE for FINAL MODULE PROJECT ####${NC}\n\n"
-printf "${YELLOW}Pipeline started at $(date +'%H:%M:%S')
+echo -e "${GREEN}\n#### RNA-SEQ PIPELINE for FINAL MODULE PROJECT ####${NC}\n
+${YELLOW}Pipeline started at $(date +'%H:%M:%S')
 ___________________________________________________________ ${NC}\n"
 
 # Stop execution when having a non-zero status and trap errors giving line number
-set -e
-trap 'printf "${RED}Error at line $LINENO${NC}"' ERR
+#set -e
+#trap 'printf "${RED}Error at line $LINENO${NC}"' ERR
 
 # Download samples and references if not exist
 bash scripts/download.sh
+#retn_code=$?
+if [ $? == "1" ]; then
+	echo -e "\n\n############ Pipeline finished at $(date +'%H:%M:%S') ##############\n"
+	exit 0
+fi
 
 # Different pipelines for different workflows
-printf "${GREEN}\nWORKFLOW PIPELINE MENU\n${NC}"
+echo -e "${GREEN}\nWORKFLOW PIPELINE MENU\n${NC}
+${RED}Default cores set to 14, change accordingly\n${NC}"
 
-printf "${YELLOW}BASIC WORKFLOWS FOR HIGH QUALITY READS, NO PRE-PROCESSING\n${NC}"
 echo -e "
-\tWORKFLOW 1 (Using Salmon pseudo-aligner for basic error-correction capacities)\n
-\tWORKFLOW 2 (Using STAR aligner)\n
-\tWORKFLOW 3 (Using HISAT2 aligner)\n"
-printf "${YELLOW}ADVANCED WORKFLOWS INCLUDING PREPROCESSING\n${NC}"
-echo -e "
+${YELLOW}BASIC WORKFLOWS FOR HIGH QUALITY READS, NO PRE-PROCESSING\n${NC}
+\tWORKFLOW 1 (Using STAR aligner)\n
+\tWORKFLOW 2 (Using HISAT2 aligner)\n
+\tWORKFLOW 3 (Using SALMON pseudo-aligner)\n
+${YELLOW}ADVANCED WORKFLOWS INCLUDING PREPROCESSING\n${NC}
 \tWORKFLOW 4 (Toolset: FastQScreen, Cutadapt, STAR)\n
 \tWORKFLOW 5 (Toolset: FastQScreen, Cutadapt, HISAT2)\n
-\tWORKFLOW 6 (Toolset: FastQScreen, Cutadapt, Salmon)\n
-\tWORKFLOW 7 (Toolset: FastQScreen, Cutadapt, Kallisto)\n
+\tWORKFLOW 6 (Toolset: FastQScreen, Cutadapt, SALMON)\n
+\tWORKFLOW 7 (Toolset: FastQScreen, Cutadapt, KALLISTO)\n
 \t(Trimmomatic workflows not working as of now)\n
 \tWORKFLOW 8 (Toolset: FastQScreen, Trimmomatic, STAR)\n
 \tWORKFLOW 9 (Toolset: FastQScreen, Trimmomatic, HISAT2)\n
-\tWORKFLOW 10 (Toolset: FastQScreen, Trimmomatic, Salmon)\n
-\tWORKFLOW 11 (Toolset: FastQScreen, Trimmomatic, Kallisto)\n"
+\tWORKFLOW 10 (Toolset: FastQScreen, Trimmomatic, SALMON)\n
+\tWORKFLOW 11 (Toolset: FastQScreen, Trimmomatic, KALLISTO)\n"
 
 read -rp "Option: " menuOp
 # de repente me ha cambiado la dirección de analisis por la cara!
@@ -67,20 +72,20 @@ Reverse file for $sid: $r_path"
 	case $menuOp in
 		# for basic workflows
 		1 )
- 			mkdir -p out/aligned/star/star log/aligned/star/star
-			outdir="aligned/star/star"
+ 			mkdir -p out/aligned/star/$sid/$RUN_ID log/aligned/star/$sid/$RUN_ID
+			outdir="aligned/star/$sid/$RUN_ID"
 			bash scripts/index.sh "STAR"
 			bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "untrimmed"
 		;;
 		2 )
-			mkdir -p out/aligned/hisat2/hisat2 log/aligned/hisat2/hisat2
-			outdir="aligned/hisat2/hisat2"
+			mkdir -p out/aligned/hisat2/$sid/$RUN_ID log/aligned/hisat2/$sid/$RUN_ID
+			outdir="aligned/hisat2/$sid/$RUN_ID"
 			bash scripts/index.sh "HISAT2"			
 			bash scripts/align.sh "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "untrimmed"
 		;;
 		3 )
-			mkdir -p out/aligned/salmon/salmon log/aligned/salmon/salmon
-			outdir="aligned/salmon/salmon"
+			mkdir -p out/aligned/salmon/$sid/$RUN_ID log/aligned/salmon/$sid/$RUN_ID
+			outdir="aligned/salmon/$sid/$RUN_ID"
 			bash scripts/index.sh "SALMON"
 			bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "untrimmed"			
 		;;
@@ -97,8 +102,8 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "STAR" 
 				
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/star/star_cutadapt log/star/star_cutadapt
-					outdir="star/star_cutadapt"
+					mkdir -p out/aligned/star_cutadapt/$sid/$RUN_ID log/aligned/star_cutadapt/$sid/$RUN_ID
+					outdir="aligned/star_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
 				done
 
@@ -107,8 +112,8 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "HISAT2"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/hisat2/hisat2_cutadapt log/hisat2/hisat2_cutadapt
-					outdir="hisat2/hisat2_cutadapt"
+					mkdir -p out/aligned/hisat2_cutadapt/$sid/$RUN_ID log/aligned/hisat2_cutadapt/$sid/$RUN_ID
+					outdir="aligned/hisat2_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
 				done
 
@@ -117,8 +122,8 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "SALMON"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/salmon/salmon_cutadapt log/salmon/salmon_cutadapt
-					outdir="salmon/salmon_cutadapt"
+					mkdir -p out/aligned/salmon_cutadapt/$sid/$RUN_ID log/aligned/salmon_cutadapt/$sid/$RUN_ID
+					outdir="aligned/salmon_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
 				done
 
@@ -127,8 +132,8 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "KALLISTO"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/kallisto/kallisto_cutadapt log/kallisto/kallisto_cutadapt
-					outdir="kallisto/kallisto_cutadapt"
+					mkdir -p out/aligned/kallisto_cutadapt/$sid/$RUN_ID log/aligned/kallisto_cutadapt/$sid/$RUN_ID
+					outdir="aligned/kallisto_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
 				done
 			fi
@@ -145,8 +150,8 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "STAR"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/star/star_trimmomatic log/star/star_trimmomatic
-					outdir="star/star_trimmomatic"
+					mkdir out/aligned/star_trimmomatic/$sid/$RUN_ID log/aligned/star_trimmomatic/$sid/$RUN_ID
+					outdir="aligned/star_trimmomatic/$sid/$RUN_ID"
 					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
 
@@ -155,8 +160,8 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "HISAT2"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/hisat2/hisat2_trimmomatic log/hisat2/hisat2_trimmomatic
-					outdir="hisat2/hisat2_trimmomatic"
+					mkdir -p out/aligned/hisat2_trimmomatic/$sid/$RUN_ID log/aligned/hisat2_trimmomatic/$sid/$RUN_ID
+					outdir="aligned/hisat2_trimmomatic/$sid/$RUN_ID"
 					bash scripts/align.sh  "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
 
@@ -165,8 +170,8 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "SALMON"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p out/salmon/salmon_trimmomatic log/salmon/salmon_trimmomatic
-					outdir="salmon/salmon_trimmomatic"
+					mkdir -p out/aligned/salmon_trimmomatic/$sid/$RUN_ID log/aligned/salmon_trimmomatic/$sid/$RUN_ID
+					outdir="aligned/salmon_trimmomatic/$sid/$RUN_ID"
 					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
 
@@ -175,8 +180,8 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "KALLISTO"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do				
-					mkdir -p out/kallisto/kallisto_trimmomatic log/kallisto/kallisto_trimmomatic
-					outdir="kallisto/kallisto_trimmomatic"
+					mkdir -p out/aligned/kallisto_trimmomatic/$sid/$RUN_ID log/aligned/kallisto_trimmomatic/$sid/$RUN_ID
+					outdir="aligned/kallisto_trimmomatic/$sid/$RUN_ID"
 					bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
 			fi
