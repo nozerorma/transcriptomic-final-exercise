@@ -52,7 +52,7 @@ ${YELLOW}ADVANCED WORKFLOWS INCLUDING PREPROCESSING\n${NC}
 \tWORKFLOW 5 (Toolset: FastQScreen, Cutadapt, HISAT2)\n
 \tWORKFLOW 6 (Toolset: FastQScreen, Cutadapt, SALMON)\n
 \tWORKFLOW 7 (Toolset: FastQScreen, Cutadapt, KALLISTO)\n
-\t(Trimmomatic workflows not working as of now)\n
+\t${RED}(Trimmomatic workflows not working as of now)${NC}\n
 \tWORKFLOW 8 (Toolset: FastQScreen, Trimmomatic, STAR)\n
 \tWORKFLOW 9 (Toolset: FastQScreen, Trimmomatic, HISAT2)\n
 \tWORKFLOW 10 (Toolset: FastQScreen, Trimmomatic, SALMON)\n
@@ -63,9 +63,7 @@ read -rp "Option: " menuOp
 # for samples found in dumped_fastq dir
 for f_path in $(find res/samples/dumped_fastq -mindepth 2 -type f -name "*_1.fastq"); do \
     r_path=${f_path/_1/_2} \
-    f_name=$(basename "$f_path") \
-    r_name=$(basename "$r_path") \
-    sid=${f_name%_*}  # extract the SRA entry ID from the filename
+    sid=$(basename "$f_path" _1.fastq)   # extract the SRA entry ID from the filename
     echo -e "\nForward file for $sid: $f_path \n
 Reverse file for $sid: $r_path"
 
@@ -96,47 +94,47 @@ Reverse file for $sid: $r_path"
 			mkdir -p out/trimmed/cutadapt/$sid log/trimmed/cutadapt/$sid
 			trimdir="trimmed/cutadapt/$sid"
 			bash scripts/pre_proc.sh "cutadapt" "$f_path" "$r_path" "out/$trimdir" "log/$trimdir"
-			
-			if [ "$menuOp" == "4" ]; then
+
+			for f_trimmed in $(find "out/$trimdir" -type f -name "*_1_trimmed.fastq"); do
+				r_trimmed=${f_trimmed/_1/_2}
+				sid=$(basename "$f_trimmed" _1_trimmed.fastq) 
+				if [ "$menuOp" == "4" ]; then
 				
-				bash scripts/index.sh "STAR" 
-				
-				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p "out/aligned/star_cutadapt/$sid/$RUN_ID" "log/aligned/star_cutadapt/$sid/$RUN_ID"
+					bash scripts/index.sh "STAR" 
+					mkdir -p "out/aligned/star_cutadapt/$sid/$RUN_ID" 
+					mkdir -p "log/aligned/star_cutadapt/$sid/$RUN_ID"
 					outdir="aligned/star_cutadapt/$sid/$RUN_ID"
-					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
-				done
-
-			elif [ "$menuOp" == "5" ]; then
+					bash scripts/align.sh "STAR" "$f_trimmed" "$r_trimmed" "out/$outdir" "log/$outdir" "cutadapt"
 				
-				bash scripts/index.sh "HISAT2"
+				elif [ "$menuOp" == "5" ]; then
+					
+					bash scripts/index.sh "HISAT2" 
 
-				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p "out/aligned/hisat2_cutadapt/$sid/$RUN_ID" "log/aligned/hisat2_cutadapt/$sid/$RUN_ID"
+					mkdir -p "out/aligned/hisat2_cutadapt/$sid/$RUN_ID" 
+					mkdir -p "log/aligned/hisat2_cutadapt/$sid/$RUN_ID"
 					outdir="aligned/hisat2_cutadapt/$sid/$RUN_ID"
-					bash scripts/align.sh "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
-				done
+					bash scripts/align.sh "HISAT2" "$f_trimmed" "$r_trimmed" "out/$outdir" "log/$outdir" "cutadapt"
 
-			elif [ "$menuOp" == "6" ]; then
+				elif [ "$menuOp" == "6" ]; then
 
-				bash scripts/index.sh "SALMON"
+					bash scripts/index.sh "SALMON"
 
-				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p "out/aligned/salmon_cutadapt/$sid/$RUN_ID" "log/aligned/salmon_cutadapt/$sid/$RUN_ID"
+					mkdir -p "out/aligned/salmon_cutadapt/$sid/$RUN_ID" 
+					mkdir -p "log/aligned/salmon_cutadapt/$sid/$RUN_ID"
 					outdir="aligned/salmon_cutadapt/$sid/$RUN_ID"
-					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
-				done
+					bash scripts/align.sh "SALMON" "$f_trimmed" "$r_trimmed" "out/$outdir" "log/$outdir" "cutadapt"
 
-			elif [ "$menuOp" == "7" ]; then
+				elif [ "$menuOp" == "7" ]; then
 
-				bash scripts/index.sh "KALLISTO"
+					bash scripts/index.sh "KALLISTO"
 
-				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p "out/aligned/kallisto_cutadapt/$sid/$RUN_ID" "log/aligned/kallisto_cutadapt/$sid/$RUN_ID"
+					mkdir -p "out/aligned/kallisto_cutadapt/$sid/$RUN_ID" 
+					mkdir -p "log/aligned/kallisto_cutadapt/$sid/$RUN_ID"
 					outdir="aligned/kallisto_cutadapt/$sid/$RUN_ID"
-					bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "cutadapt"
-				done
-			fi
+					bash scripts/align.sh "KALLISTO" "$f_trimmed" "$r_trimmed" "out/$outdir" "log/$outdir" "cutadapt"
+				
+				fi
+			done
 		;;
 		# for trimmomatic workflows (might remove them or comment them, let's see)
 		8 | 9 | 10 | 11 )
