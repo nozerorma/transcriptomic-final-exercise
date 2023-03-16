@@ -1,9 +1,10 @@
-# QC script
+#### QC script ####
 
-# maybe insert logs?
-
-YELLOW='\033[1;33m'
+source $(dirname "$0")/spinner.sh
+RED='\033[0;31m' 
 NC='\033[0m' # No Color
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
 
 mkdir -p "out/qc/fastqc"
 mkdir -p "out/qc/fastq_screen"
@@ -18,17 +19,18 @@ fastqscreen_dir=$4
 # FASTQC
 if [ "$1" == "run" ]; then
 	
-	echo -e "\nPerforming QC analysis for $nofastq_sid...\n"
+	echo -e "${YELLOW}\nPerforming QC analysis for $nofastq_sid...
+___________________________________________________________ ${NC}\n"
 
 	if [ -f $fastqc_dir/$cut_sid/${nofastq_sid}_fastqc.html ]; then
 		echo -e "FastQC analysis already performed for $nofastq_sid, skipping analysis.\n" 
 
 	else
-		echo -e "\nRunning FastQC analysis..."
+		echo -e "Running FastQC analysis..."
 		mkdir -p $fastqc_dir/$cut_sid
 		mkdir -p log/qc
-		fastqc -o $fastqc_dir/$cut_sid $sid 2>&1 >/dev/null | tail -n +2 2> log/qc/fastqc.log
-
+		(fastqc -o $fastqc_dir/$cut_sid $sid 2>&1 >/dev/null | tail -n +2 2>&1 log/qc/fastqc.log) & spinner $!
+		echo
 	fi
 
 	# FASTQSCREEN
@@ -53,17 +55,13 @@ if [ "$1" == "run" ]; then
 			esac
 		
 		else
-			echo -e "\nRunning FastQScreen analysis...\n"
+			echo -e "\nRunning FastQScreen analysis..."
 			mkdir -p $fastqscreen_dir/$cut_sid
 			mkdir -p log/qc
-			fastq_screen --conf "$screen_gen/fastq_screen.conf" \
+			(fastq_screen --conf "$screen_gen/fastq_screen.conf" \
 				--tag --aligner bowtie2 --subset 100000 --threads 14 \
-				--outdir "$fastqscreen_dir/$cut_sid" $sid 2> log/qc/fastqscreen.log
+				--outdir "$fastqscreen_dir/$cut_sid" $sid 2>&1 log/qc/fastqscreen.log) & spinner $!
+			echo
 		fi
 	fi
 fi
-
-# Results visualization
-printf "${YELLOW}\nNow, take your time to give a look to the QC analysis.\n${NC}"
-echo "When you are ready, press any key to continue..."
-read -n 1 -s -r -p ""

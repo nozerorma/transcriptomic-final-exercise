@@ -1,5 +1,11 @@
 #### PRE-PROCESSING SCRIPT ####
 
+source "scripts/spinner.sh"
+RED='\033[0;31m' 
+NC='\033[0m' # No Color
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+
 f_path=$2
 r_path=$3
 outdir=$4
@@ -22,13 +28,13 @@ if [ "$1" == "cutadapt" ]; then
         # adapters infered from most common Illumina, listed in here
         # https://tinyurl.com/illumina-adapters
         # https://tinyurl.com/illumina-adapters-2
-        cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
+        (cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
             -a CTGTCTCTTATACACATCT -A CTGTCTCTTATACACATCT \
             -g TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG -G GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG \
             -a CTGTCTCTTATACACATCT...AGATGTGTATAAGAGACAG -a TGGAATTCTCGGGTGCCAAGG \
             -a "G{100}" -g "G{100}" -a "A{100}" -g "A{100}" -q 20 \
             -o "$outdir/${f_sid}_trimmed.fastq" -p "$outdir/${r_sid}_trimmed.fastq" \
-            "$f_path" "$r_path" --cores 14 > "$logdir"/log.txt
+            "$f_path" "$r_path" --cores 14 -m 1 --discard-untrimmed > "$logdir"/log.txt)
     fi
 fi
 
@@ -42,6 +48,14 @@ for trimmed_sid in $(find $outdir -type f -name "*_trimmed.fastq");do
         ;;
 	esac
 done
+
+case $runqc in
+[Yy]* )
+	printf "${GREEN}\nNow, take your time to give a look to the QC analysis.\n${NC}"
+	echo "When you are ready, press any key to continue..."
+	read -n 1 -s -r -p ""
+;;
+esac
 
 # Uncomment and modify conveniently for using Trimmomatic
 # elif [ "$1" == "trimmomatic" ]; then

@@ -13,7 +13,8 @@ outdir="res/index/$tool"
 ref_gen="data/assembly/reference_grch38/Homo_sapiens.GRCh38.dna.chromosome.21.fa"
 ref_cdna="data/assembly/reference_grch38/Homo_sapiens.GRCh38.cdna.all.fa.gz"
 
-echo -e "\nBuilding "$tool" index...\n"
+echo -e "${YELLOW}\nBuilding "$tool" index...
+___________________________________________________________ ${NC}\n"
 
 # STAR INDEX
 

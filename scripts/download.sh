@@ -1,3 +1,11 @@
+#### DOWNLOAD SCRIPT ####
+
+source "scripts/spinner.sh"
+RED='\033[0;31m' 
+NC='\033[0m' # No Color
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+
 RUN_ID=$1
 
 mkdir -p "res/samples"	
@@ -27,7 +35,7 @@ while true; do
         for SRAentry in "${SRAentries[@]}"; do
             if [[ "$SRAentry" =~ ^[Ss]RR[0-9]{6}$ ]]; then
                 echo "Matched SRA accession $SRAentry"
-                wget -nc -P $sample_dir/SRA --content-disposition https://sra-pub-run-odp.s3.amazonaws.com/sra/$SRAentry/$SRAentry
+                (wget -nc -P $sample_dir/SRA --content-disposition https://sra-pub-run-odp.s3.amazonaws.com/sra/$SRAentry/$SRAentry) & spinner
                 echo "Finished downloading $SRAentry"
 				
 				# Dump fastq from SRA entry
@@ -36,7 +44,7 @@ while true; do
 					if [ "$(ls -A $sample_dir/dumped_fastq/$SRAentry)" ]; then
 						echo -e "Fastq already dumped for $SRAentry, skipping.\n"
 					else
-						fasterq-dump -fp -O $sample_dir/dumped_fastq/$SRAentry $SRAentry
+						(fasterq-dump -fp -O $sample_dir/dumped_fastq/$SRAentry $SRAentry) & spinner $!
 					fi				
             else
                 echo "Did not match SRA accession $SRAentry. Skipping download."
@@ -68,3 +76,13 @@ for SRAentry in "${SRAentries[@]}"; do
 		fi
 	done
 done
+
+
+# Results visualization
+case $performQC in
+[Yy]* )
+	printf "${GREEN}\nNow, take your time to give a look to the QC analysis.\n${NC}"
+	echo "When you are ready, press any key to continue..."
+	read -n 1 -s -r -p ""
+;;
+esac
