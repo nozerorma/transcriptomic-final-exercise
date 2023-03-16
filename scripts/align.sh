@@ -1,5 +1,12 @@
 #### ALIGNMENT SCRIPT ####
 
+source "scripts/spinner.sh"
+RED='\033[0;31m' 
+NC='\033[0m' # No Color
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+
+
 tool=$1
 f_path=$2
 r_path=$3
@@ -35,7 +42,8 @@ elif [ "$workflow" == "cutadapt" ] || [ "$workflow" == "trimmomatic" ] ; then
 	sample_dir="$trimmed_dir"
 fi
 
-echo -e "\nAligning $base_sid to reference with $tool...\n"
+echo -e "${YELLOW}\nAligning $base_sid to reference with $tool...
+___________________________________________________________ ${NC}\n"
 
 
 # overview from https://www.reneshbedre.com/blog/star-aligner.html#mapping-reads-to-genome
@@ -46,15 +54,15 @@ if [ "$1" == "STAR" ]; then
 	
 	else
 
-		STAR --runThreadN 14 --readFilesIn "$f_path" $r_path  \
+		(STAR --runThreadN 14 --readFilesIn "$f_path" $r_path  \
 				--genomeDir "$index_dir" --outReadsUnmapped Fastx  \
-				--outFileNamePrefix "$outdir" \
-				--outSAMtype BAM SortedByCoordinate 
+				--outFileNamePrefix "$outdir/" \
+				--outSAMtype BAM SortedByCoordinate) & spinner $!
 			
 			# add more params for statistics
 			bam_file=$(find "$outdir" -type f -name "*.bam")
-			samtools stats "$bam_file" > "$bam_file".txt
-			samtools index "$bam_file"
+			(samtools stats "$bam_file" > "$bam_file".txt) & spinner $!
+			(samtools index "$bam_file") & spinner $!
 				# index bam here with samtools
 
 			echo -e "\nSample $base_sid aligned using $tool.\n"
@@ -68,15 +76,15 @@ elif [ "$1" == "HISAT2" ]; then
 	
 	else
 		
-		hisat2 --new-summary --summary-file "$outdir.hisat2.summary" \
-		-p 14 -x "$index_dir/HISAT2" -1 "$f_path" -2 "$r_path" -k 1 -S "$outdir.sam" 
+		(hisat2 --new-summary --summary-file "$outdir.hisat2.summary" \
+		-p 14 -x "$index_dir/HISAT2" -1 "$f_path" -2 "$r_path" -k 1 -S "$outdir.sam") & spinner $!
 		
 		# problema con el pipe
 		# add more params for statistics
-		samtools view -bS "$outdir.sam" > "$outdir.bam"
-		samtools stats "$outdir.bam" > "$outdir.txt"
-		samtools sort --write-index "$outdir.bam" -o "$outdir.sorted.bam"
-		samtools stats "$outdir.sorted.bam" > "$outdir.sorted.txt" 
+		(samtools view -bS "$outdir.sam" > "$outdir.bam") & spinner $!
+		(samtools stats "$outdir.bam" > "$outdir.txt") & spinner $!
+		(samtools sort --write-index "$outdir.bam" -o "$outdir.sorted.bam") & spinner $!
+		(samtools stats "$outdir.sorted.bam" > "$outdir.sorted.txt") & spinner $!
 		# was going to run picard but it has a bunch of incompatibilities
 		# with the tools I'm already using, aborting
 	fi
@@ -93,8 +101,8 @@ elif [ "$1" == "SALMON" ]; then
 	
 	else
 		
-		salmon quant -i "$index_dir" -l A -1 "$f_path" -2 "$r_path" --validateMappings \
-			-o "$outdir" -g "$ref_gtf" -p 14
+		(salmon quant -i "$index_dir" -l A -1 "$f_path" -2 "$r_path" --validateMappings \
+			-o "$outdir" -g "$ref_gtf" -p 14) & spinner $!
 	fi
 
 # KALLISTO
@@ -106,8 +114,8 @@ elif [ "$1" == "KALLISTO" ]; then
 	else
 		
 		base_ref_cdna=$(basename "$ref_cdna" .gz)
-		kallisto quant -i "$index_dir/$base_ref_cdna.idx" --bias --fusion \
+		(kallisto quant -i "$index_dir/$base_ref_cdna.idx" --bias --fusion \
 		"$f_path" "$r_path" -o "$outdir" --pseudobam --genomebam \
-		--gtf "$ref_gtf" -t 14 
+		--gtf "$ref_gtf" -t 14) & spinner $!
 	fi	
 fi
