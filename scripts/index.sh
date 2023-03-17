@@ -16,6 +16,14 @@ ref_cdna="data/assembly/reference_grch38/Homo_sapiens.GRCh38.cdna.all.fa.gz"
 echo -e "${YELLOW}\nBuilding "$tool" index...
 ___________________________________________________________ ${NC}\n"
 
+# Comprobation for independent use of script
+if [ "$#" -ne 1 ]
+then
+    printf "${RED}Usage: $1 <tool> ${NC}\n"
+    echo -e 'tool: "STAR", "HISAT2", "SALMON", "KALLISTO"\n'
+	exit 1
+fi
+
 # STAR INDEX
 
 if [ "$1" == "STAR" ]; then

@@ -44,7 +44,7 @@ read -rp "Would you like to re-run QC report for your trimmed samples? (Y/n) " r
 for trimmed_sid in $(find $outdir -type f -name "*_trimmed.fastq");do
     case $runqc in
         [Yy]* )
-            bash scripts/qc.sh run $trimmed_sid "out/qc/fastqc" "out/qc/fastq_screen"
+            bash scripts/qc.sh $trimmed_sid "out/qc/fastqc" "out/qc/fastq_screen"
         ;;
 	esac
 done

@@ -6,8 +6,6 @@ NC='\033[0m' # No Color
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 
-RUN_ID=$1
-
 mkdir -p "res/samples"	
 mkdir -p "data/assembly/reference_grch38"
 sample_dir="res/samples"
@@ -66,7 +64,7 @@ for SRAentry in "${SRAentries[@]}"; do
 		if [ "$(ls -A $sample_dir/dumped_fastq/$base_sid)" ]; then
 			case $performQC in
 				[Yy]* )
-					bash scripts/qc.sh "run" $sid "out/qc/fastqc" "out/qc/fastq_screen"
+					bash scripts/qc.sh $sid "out/qc/fastqc" "out/qc/fastq_screen"
 				;;
 				[Nn]* )
 					echo -e "\nSkipping QC analysis...\n"

@@ -20,15 +20,6 @@ base_sid=$(basename "$f_path" | cut -d"_" -f1)
 f_sid=$(basename "$f_name" .fastq)
 r_sid=$(basename "$r_name" .fastq)
 
-# Comprobation for independent use of script
-if [ "$#" -ne 6 ]
-then
-    echo "Usage: $0 <tool> $1 <f_path> $2 <r_path> $3 <outdir> $4 <logdir> $5 <workflow> "
-    echo -e 'tool: "STAR", "HISAT2", "SALMON", "KALLISTO"
-	workflow: "untrimmed", "cutadapt", "trimmomatic"'
-	exit 1
-fi
-
 # Maybe change all the ls -A for -f, makes more sense
 # This section should be changed accordingly
 ###### It would be nice of me to glob, but I don't seem to be able
@@ -39,6 +30,15 @@ ref_gtf="data/assembly/reference_grch38/Homo_sapiens.GRCh38.109.chr21.gtf"
 trimmed_dir="out/trimmed/$workflow"
 untrimmed_dir="res/samples/dumped_fastq" # falta completar
 index_dir="res/index/$tool"
+
+# Comprobation for independent use of script
+if [ "$#" -ne 6 ]
+then
+    printf "${RED}Usage: $1 <tool> $2 <f_path> $3 <r_path> $4 <outdir> $5 <logdir> $6 <workflow>${NC}\n"
+    echo -e 'tool: "STAR", "HISAT2", "SALMON", "KALLISTO"
+workflow: "untrimmed", "cutadapt", "trimmomatic"\n'
+	exit 1
+fi
 
 # First lets see what workflow we are working with
 

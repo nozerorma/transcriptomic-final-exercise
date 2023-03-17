@@ -14,6 +14,14 @@ tool=$1
 bam=$2
 countdir=$3
 
+# Comprobation for independent use of script
+if [ "$#" -ne 3 ]
+then
+    printf "${RED}Usage: $1 <tool> $2 <bam_file> $3 <counts_out_dir>${NC}\n"
+    echo -e 'tool: "featurecounts", "htseq"\n'
+	exit 1
+fi
+
 # Counts using FEATURECOUNTS
 
 if [ "$1" == "featurecounts" ]; then
