@@ -31,6 +31,15 @@ trimmed_dir="out/trimmed/$workflow"
 untrimmed_dir="res/samples/dumped_fastq" # falta completar
 index_dir="res/index/$tool"
 
+# Comprobation for independent use of script
+if [ "$#" -ne 6 ]
+then
+    printf "${RED}Usage: $1 <tool> $2 <f_path> $3 <r_path> $4 <outdir> $5 <logdir> $6 <workflow>${NC}\n"
+    echo -e 'tool: "STAR", "HISAT2", "SALMON", "KALLISTO"
+workflow: "untrimmed", "cutadapt", "trimmomatic"\n'
+	exit 1
+fi
+
 # First lets see what workflow we are working with
 
 sample_dir=0
@@ -49,45 +58,51 @@ ___________________________________________________________ ${NC}\n"
 # overview from https://www.reneshbedre.com/blog/star-aligner.html#mapping-reads-to-genome
 # STAR
 if [ "$1" == "STAR" ]; then
-	if [ "$(ls -A $outdir)" ]; then
-		echo -e "Alignment already performed for $base_sid, skipping alignment...\n"
+
+	(STAR --runThreadN 14 --readFilesIn "$f_path" $r_path  \
+			--genomeDir "$index_dir" --outReadsUnmapped Fastx  \
+			--outFileNamePrefix "$outdir/" \
+			--outSAMtype BAM SortedByCoordinate ) & spinner $!
+		
+		# add more params for statistics (there's a few problems here to solve)
+		bam_file=$(find "$outdir" -type f -name "*.bam")
+		(samtools stats "$bam_file" > "$bam_file".txt) & spinner $!
+		(samtools index "$bam_file") & spinner $!
+		(bamCoverage -b "$bam_file" -o "$outdir/$base_sid.bw" --normalizeUsing BPM) & spinner $!
+			# index bam here with samtools
+
+		echo -e "\nSample $base_sid aligned using $tool.\n"
+
+	# POST_PROCESSING: READ COUNT
+	read -rp "Which tool would you like to use for feature count? (featurecounts/htseq) " counts
+	mkdir "$outdir/counts"
+	countdir="$outdir/counts"
+	bash scripts/post_proc.sh "$counts" "$bam_file" "$countdir"
 	
-	else
 
-		(STAR --runThreadN 14 --readFilesIn "$f_path" $r_path  \
-				--genomeDir "$index_dir" --outReadsUnmapped Fastx  \
-				--outFileNamePrefix "$outdir/" \
-				--outSAMtype BAM SortedByCoordinate) & spinner $!
-			
-			# add more params for statistics
-			bam_file=$(find "$outdir" -type f -name "*.bam")
-			(samtools stats "$bam_file" > "$bam_file".txt) & spinner $!
-			(samtools index "$bam_file") & spinner $!
-				# index bam here with samtools
-
-			echo -e "\nSample $base_sid aligned using $tool.\n"
-	fi
 # overview from https://bioinfo-dirty-jobs.github.io/rana2//lectures/07.rnaseq_hisat2/
 # HISAT2
 elif [ "$1" == "HISAT2" ]; then
 
-	if [ "$(ls -A $outdir)" ]; then
-		echo -e "Alignment already performed for $base_sid, skipping alignment...\n"
+	(hisat2 --new-summary --summary-file "$outdir/$base_sid.hisat2.summary" \
+	-p 14 -x "$index_dir/HISAT2" -1 "$f_path" -2 "$r_path" -k 1 -S "$outdir/$base_sid.sam") & spinner $!
 	
-	else
-		
-		(hisat2 --new-summary --summary-file "$outdir.hisat2.summary" \
-		-p 14 -x "$index_dir/HISAT2" -1 "$f_path" -2 "$r_path" -k 1 -S "$outdir.sam") & spinner $!
-		
-		# problema con el pipe
-		# add more params for statistics
-		(samtools view -bS "$outdir.sam" > "$outdir.bam") & spinner $!
-		(samtools stats "$outdir.bam" > "$outdir.txt") & spinner $!
-		(samtools sort --write-index "$outdir.bam" -o "$outdir.sorted.bam") & spinner $!
-		(samtools stats "$outdir.sorted.bam" > "$outdir.sorted.txt") & spinner $!
-		# was going to run picard but it has a bunch of incompatibilities
-		# with the tools I'm already using, aborting
-	fi
+	# problema con el pipe
+	# add more params for statistics
+	(samtools view -bS "$outdir/$base_sid.sam" > "$outdir/$base_sid.bam") & spinner $!
+	(samtools stats "$outdir/$base_sid.bam" > "$outdir/$base_sid.txt") & spinner $!
+	(samtools sort --write-index "$outdir/$base_sid.bam" -o "$outdir/$base_sid.sorted.bam") & spinner $!
+	(samtools stats "$outdir/$base_sid.sorted.bam" > "$outdir/$base_sid.sorted.txt") & spinner $!
+	(bamCoverage -b "$outdir/$base_sid.sorted.bam" -o "$outdir/$base_sid.bw" --normalizeUsing BPM) & spinner $!
+
+	# was going to run picard but it has a bunch of incompatibilities
+	# with the tools I'm already using, aborting
+
+	# POST_PROCESSING: READ COUNT
+	read -rp "Which tool would you like to use for feature count? (featurecounts/htseq) " counts
+	mkdir "$outdir/counts/"
+	countdir="$outdir/counts"
+	bash scripts/post_proc.sh "$counts" "$outdir/$base_sid.sorted.bam" "$countdir"
 
 ## ALIGNMENT
 ### PSEUDO-TOOLS
@@ -96,26 +111,28 @@ elif [ "$1" == "HISAT2" ]; then
 # SALMON (mapping-based mode, using GTF annotations)
 # -l set as A for automatic guessing of strandness, change accordingly
 elif [ "$1" == "SALMON" ]; then
-	if [ "$(ls -A $outdir)" ]; then
-		echo -e "Alignment already performed for $base_sid, skipping alignment...\n"
-	
-	else
 		
-		(salmon quant -i "$index_dir" -l A -1 "$f_path" -2 "$r_path" --validateMappings \
-			-o "$outdir" -g "$ref_gtf" -p 14) & spinner $!
-	fi
+	salmon quant -i "$index_dir" -l A -1 "$f_path" -2 "$r_path" --validateMappings \
+		-o "$outdir" -g "$ref_gtf" -p 14 --writeMappings 	
 
 # KALLISTO
 # tema de los gtf en ambos, no se si sin meterlo en idx tiene sentido
 elif [ "$1" == "KALLISTO" ]; then
-	if [ "$(ls -A $outdir)" ]; then
-		echo -e "Alignment already performed for $base_sid, skipping alignment...\n"
 	
-	else
-		
-		base_ref_cdna=$(basename "$ref_cdna" .gz)
-		(kallisto quant -i "$index_dir/$base_ref_cdna.idx" --bias --fusion \
-		"$f_path" "$r_path" -o "$outdir" --pseudobam --genomebam \
-		--gtf "$ref_gtf" -t 14) & spinner $!
-	fi	
+	base_ref_cdna=$(basename "$ref_cdna" .gz)
+
+	(kallisto quant -i "$index_dir/$base_ref_cdna.idx" --bias --fusion \
+	"$f_path" "$r_path" -o "$outdir" --pseudobam --genomebam \
+	--gtf "$ref_gtf" -t 14) & spinner $!
+
+	pseudobam="$outdir/pseudoalignments.bam"
+	(bamCoverage -b "$pseudobam" -o "$outdir/$base_sid.pseudoalignments.bw" \
+	--normalizeUsing BPM 2>&1) & spinner $!	
+	
+	# POST_PROCESSING: READ COUNT
+	read -rp "Which tool would you like to use for feature count? (featurecounts/htseq) " counts
+	mkdir "$outdir/counts/"
+	countdir="$outdir/counts"
+	bash scripts/post_proc.sh "$counts" "$pseudobam" "$countdir"
+
 fi
