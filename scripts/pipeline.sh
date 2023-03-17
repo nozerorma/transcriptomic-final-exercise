@@ -47,16 +47,17 @@ ${YELLOW}BASIC WORKFLOWS FOR HIGH QUALITY READS, NO PRE-PROCESSING\n${NC}
 \tWORKFLOW 1 (Using STAR aligner)\n
 \tWORKFLOW 2 (Using HISAT2 aligner)\n
 \tWORKFLOW 3 (Using SALMON pseudo-aligner)\n
+\tWORKFLOW 4 (Using SALMON pseudo-aligner)\n
 ${YELLOW}ADVANCED WORKFLOWS INCLUDING PREPROCESSING\n${NC}
-\tWORKFLOW 4 (Toolset: FastQScreen, Cutadapt, STAR)\n
-\tWORKFLOW 5 (Toolset: FastQScreen, Cutadapt, HISAT2)\n
-\tWORKFLOW 6 (Toolset: FastQScreen, Cutadapt, SALMON)\n
-\tWORKFLOW 7 (Toolset: FastQScreen, Cutadapt, KALLISTO)\n
+\tWORKFLOW 5 (Toolset: FastQScreen, Cutadapt, STAR)\n
+\tWORKFLOW 6 (Toolset: FastQScreen, Cutadapt, HISAT2)\n
+\tWORKFLOW 7 (Toolset: FastQScreen, Cutadapt, SALMON)\n
+\tWORKFLOW 8 (Toolset: FastQScreen, Cutadapt, KALLISTO)\n
 \t${RED}(Trimmomatic workflows not working as of now)${NC}\n
-\tWORKFLOW 8 (Toolset: FastQScreen, Trimmomatic, STAR)\n
-\tWORKFLOW 9 (Toolset: FastQScreen, Trimmomatic, HISAT2)\n
-\tWORKFLOW 10 (Toolset: FastQScreen, Trimmomatic, SALMON)\n
-\tWORKFLOW 11 (Toolset: FastQScreen, Trimmomatic, KALLISTO)\n"
+\tWORKFLOW 9 (Toolset: FastQScreen, Trimmomatic, STAR)\n
+\tWORKFLOW 10 (Toolset: FastQScreen, Trimmomatic, HISAT2)\n
+\tWORKFLOW 11 (Toolset: FastQScreen, Trimmomatic, SALMON)\n
+\tWORKFLOW 12 (Toolset: FastQScreen, Trimmomatic, KALLISTO)\n"
 
 read -rp "Option: " menuOp
 # de repente me ha cambiado la dirección de analisis por la cara!
@@ -87,9 +88,15 @@ Reverse file for $sid: $r_path"
 			bash scripts/index.sh "SALMON"
 			bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "untrimmed"			
 		;;
+		4 )
+			mkdir -p "out/aligned/kallisto/$sid/$RUN_ID" "log/aligned/kallisto/$sid/$RUN_ID"
+			outdir="aligned/kallisto/$sid/$RUN_ID"
+			bash scripts/index.sh "KALLISTO"
+			bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "untrimmed"		
+		;;
 
 		# for cutadapt workflows
-		4 | 5 | 6 | 7 )
+		5 | 6 | 7 | 8 )
 			
 			mkdir -p out/trimmed/cutadapt/$sid log/trimmed/cutadapt/$sid
 			trimdir="trimmed/cutadapt/$sid"
@@ -98,7 +105,7 @@ Reverse file for $sid: $r_path"
 			for f_trimmed in $(find "out/$trimdir" -type f -name "*_1_trimmed.fastq"); do
 				r_trimmed=${f_trimmed/_1/_2}
 				sid=$(basename "$f_trimmed" _1_trimmed.fastq) 
-				if [ "$menuOp" == "4" ]; then
+				if [ "$menuOp" == "5" ]; then
 				
 					bash scripts/index.sh "STAR" 
 					mkdir -p "out/aligned/star_cutadapt/$sid/$RUN_ID" 
@@ -106,7 +113,7 @@ Reverse file for $sid: $r_path"
 					outdir="aligned/star_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "STAR" "$f_trimmed" "$r_trimmed" "out/$outdir" "log/$outdir" "cutadapt"
 				
-				elif [ "$menuOp" == "5" ]; then
+				elif [ "$menuOp" == "6" ]; then
 					
 					bash scripts/index.sh "HISAT2" 
 
@@ -115,7 +122,7 @@ Reverse file for $sid: $r_path"
 					outdir="aligned/hisat2_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "HISAT2" "$f_trimmed" "$r_trimmed" "out/$outdir" "log/$outdir" "cutadapt"
 
-				elif [ "$menuOp" == "6" ]; then
+				elif [ "$menuOp" == "7" ]; then
 
 					bash scripts/index.sh "SALMON"
 
@@ -124,7 +131,7 @@ Reverse file for $sid: $r_path"
 					outdir="aligned/salmon_cutadapt/$sid/$RUN_ID"
 					bash scripts/align.sh "SALMON" "$f_trimmed" "$r_trimmed" "out/$outdir" "log/$outdir" "cutadapt"
 
-				elif [ "$menuOp" == "7" ]; then
+				elif [ "$menuOp" == "8" ]; then
 
 					bash scripts/index.sh "KALLISTO"
 
@@ -137,13 +144,13 @@ Reverse file for $sid: $r_path"
 			done
 		;;
 		# for trimmomatic workflows (might remove them or comment them, let's see)
-		8 | 9 | 10 | 11 )
+		9 | 10 | 11 | 12 )
 			
 			mkdir -p out/trimmed/trimmomatic/$sid log/trimmed/trimmomatic/$sid
 			trimdir="trimmed/trimmomatic/$sid"
 			bash scripts/pre_proc.sh "trimmomatic" "$f_path" "$r_path" "out/$trimdir" "log/$trimdir"
 			
-			if [ "$menuOp" == "8" ]; then
+			if [ "$menuOp" == "9" ]; then
 
 				bash scripts/index.sh "STAR"
 
@@ -153,7 +160,7 @@ Reverse file for $sid: $r_path"
 					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
 
-			elif [ "$menuOp" == "9" ]; then
+			elif [ "$menuOp" == "10" ]; then
 
 				bash scripts/index.sh "HISAT2"
 
@@ -163,7 +170,7 @@ Reverse file for $sid: $r_path"
 					bash scripts/align.sh  "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
 
-			elif [ "$menuOp" == "10" ]; then
+			elif [ "$menuOp" == "11" ]; then
 
 				bash scripts/index.sh "SALMON"
 
@@ -173,7 +180,7 @@ Reverse file for $sid: $r_path"
 					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
 				done
 
-			elif [ "$menuOp" == "11" ]; then
+			elif [ "$menuOp" == "12" ]; then
 
 				bash scripts/index.sh "KALLISTO"
 
