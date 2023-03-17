@@ -47,7 +47,7 @@ ${YELLOW}BASIC WORKFLOWS FOR HIGH QUALITY READS, NO PRE-PROCESSING\n${NC}
 \tWORKFLOW 1 (Using STAR aligner)\n
 \tWORKFLOW 2 (Using HISAT2 aligner)\n
 \tWORKFLOW 3 (Using SALMON pseudo-aligner)\n
-\tWORKFLOW 4 (Using SALMON pseudo-aligner)\n
+\tWORKFLOW 4 (Using KALLISTO pseudo-aligner)\n
 ${YELLOW}ADVANCED WORKFLOWS INCLUDING PREPROCESSING\n${NC}
 \tWORKFLOW 5 (Toolset: FastQScreen, Cutadapt, STAR)\n
 \tWORKFLOW 6 (Toolset: FastQScreen, Cutadapt, HISAT2)\n
@@ -192,10 +192,6 @@ Reverse file for $sid: $r_path"
 			fi
 		;;
 	esac
-	
-	# Postprocessing with SAMtools, htseq and deeptools
-	echo -e "\nPerforming post-alignment steps...\n"
-	#bash post_proc.sh $sid 
 
 done
 
