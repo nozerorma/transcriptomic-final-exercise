@@ -4,11 +4,13 @@
 
 ### RESOLUCIÓN APARTADO 1
 
-Para responder a las preguntas del apartado 1, se decidió realizar un pipeline interactivo en el cual el usuario, tras introducir el número de entrada de cualquier muestra SRA, puede ir desarrollando diferentes tareas en función del workflow deseado.
+Para responder a las preguntas del apartado 1, se decidió realizar un pipeline interactivo en el cual el usuario, tras introducir una o varias entradas de cualquier muestra en formato SRA, puede ir desarrollando diferentes tareas en función del workflow deseado.
 
 Específicamente, el usuario tiene la posibilidad de:
 
-1. INPUT interactivo de entrada SRA, descarga de fichero, y dumping de ficheros forward y reverse utilizando la herramienta 'Fasterq-dump' (*download.sh*).
+0. Menú interactivo para navegar a través de los diferentes workflows.
+
+1. Input interactivo de entrada SRA, descarga de fichero, y dumping de ficheros forward y reverse utilizando la herramienta 'Fasterq-dump' (*download.sh*).
 
 2. Análisis de calidad de muestras descargadas, utilizando las herramientas 'FastQC' y 'Fastqscreen'. Incluye la posibilidad de descargar genomas de referencia de FastQScreen (*qc.sh*).
 
