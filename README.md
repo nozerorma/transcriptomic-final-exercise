@@ -1,5 +1,7 @@
 ## Ejercicio final de transcriptómica (curso 2022-2023)
 
+## MODIFICAR TODO Y COMENZAR A INSERTAR MODO DE USO Y EXPLICACI
+
 El objetivo de este trabajo es que el alumno demuestre los conocimientos obtenidos acerca del análisis de RNA-seq. Para ello deberá **redactar un informe** en el que se expliquen los datos de partida y se extraiga una **conclusión de los resultados**. Así mismo, el alumno debe **detallar el proceso de análisis** indicando el *software* (incluída la versión) empleado, así como los parámetros utilizados en cada uno de los pasos. En caso de que hubiera que eliminar muestras por motivos técnicos o biológicos, el alumno debe indicar y justificar el por qué en cada caso. Se pueden introducir *code chunks* e imágenes para apoyar el informe. De manera alternativa, puede aportarse todo el código en forma de repositorio público. Se han planteado **5 preguntas (10 puntos en total)** para guiar la redacción del informe.
 
 El trabajo consta de dos apartados en los que se utilizarán datos de un experimento en el que disponemos de 24 cultivos primarios de tumores paratiroideos negativos para receptores de estrógenos alfa (ERα). Las muestras, procedentes de 4 pacientes diferentes, se han tratado con dos fármacos diferentes: diarilpropionitrilo (DPN) o 4-hidroxitamoxifeno (OHT) a 24h o 48h. El DPN es un agonista del ERα mientras que el OHT es un inhibidor competitivo de los receptores de estrógenos.
