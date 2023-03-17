@@ -2,6 +2,29 @@
 
 ## RNA-seq analysis using an interactive pipeline
 
+### RESOLUCIÓN APARTADO 1
+
+Para responder a las preguntas del apartado 1, se decidió realizar un pipeline interactivo en el cual el usuario, tras introducir el número de entrada de cualquier muestra SRA, puede ir desarrollando diferentes tareas en función del workflow deseado.
+
+Específicamente, el usuario tiene la posibilidad de:
+
+1. INPUT interactivo de entrada SRA, descarga de fichero, y dumping de ficheros forward y reverse utilizando la herramienta 'Fasterq-dump' (*download.sh*).
+
+2. Análisis de calidad de muestras descargadas, utilizando las herramientas 'FastQC' y 'Fastqscreen'. Incluye la posibilidad de descargar genomas de referencia de FastQScreen (*qc.sh*).
+
+3. Pre-procesado de las muestras tras observación de análisis de calidad, utilizando las herramientas 'Cutadapt' (incluye adaptadores más comunes en secuenciación Illumina RNA) y 'Trimmomatic' (**TO-DO**) (*pre_proc.sh*).
+
+4. Construcción de Index para las herramientas de alineamiento y pseudoalineamiento utilizadas (STAR, HISAT2, SALMON y KALLISTO (*index.sh*).
+
+5. Alineamiento (o pseudoalineamiento de los reads), con la posibilidad de seguir con workflows anteriores en los que se ha realizado trimming de las mismas. Mismos alineadores anteriormente referidos (*align.sh*).
+
+6. Conteo de los reads y elaboración  de matriz de cuentas, utilizando HTSeq o countFeatures. Se puede realizar sobre los ficheros bam ordenados de STAR, HISAT2 y KALLISTO (*post_proc.sh*).
+
+** NÓTESE QUE, SI BIEN TODOS LOS DIFERENTES SCRIPTS ESTÁN PENSADOS PARA SER CORRIDOS EN CONJUNTO A TRAVÉS DEL MENÚ INTERACTIVO PRESENTE EN** *pipeline.sh* **, PUEDEN SER CORRIDOS INDEPENDIENTEMENTE. PARA VER LOS ARGUMENTOS NECESARIOS BASTA CON TRATAR DE CORRER CUALQUIERA DE LOS SCRIPTS. **
+
+
+
+
 
 ### DESCRIPCIÓN DEL EJERCICIO
 
@@ -25,28 +48,6 @@ Se pide realizar un análisis de dichas muestras similar al realizado en clase, 
 **Pregunta 2 (1.5 puntos):** Para poder llevar a cabo el alineamiento de las muestras en vuestros ordenadores será necesario trabajar con archivos reducidos correspondientes al cromosoma 21. Se requiere el indexado de la secuencia de este cromosoma, así como el alineamiento de las muestras a dicha referencia. Para ello se podrá utilizar el alineador HISAT2 utilizado en clase u otros (alineadores o pseudoalineadores). Comentar cada uno de los comandos y parámetros empleados, justificando su uso.
 
 **Pregunta 3 (1.5 puntos):** Una vez generados los archivos alineados se reportarán las estadísticas de alineamiento y se procederá a la cuantificación de la expresión utilizando el archivo GTF correspondiente. Para ello se podrá utilizar HTSeq u otras herramientas de cuantificación. En cualquier caso, detallar y justificar los comandos y parámetros empleados para ello.
-
-##### RESOLUCIÓN APARTADO 1
-
-Para responder a las preguntas del apartado 1, se decidió realizar un pipeline interactivo en el cual el usuario, tras introducir el número de entrada de cualquier muestra SRA, puede ir desarrollando diferentes tareas en función del workflow deseado.
-
-Específicamente, el usuario tiene la posibilidad de:
-
-1. INPUT interactivo de entrada SRA, descarga de fichero, y dumping de ficheros forward y reverse utilizando la herramienta 'Fasterq-dump' (*download.sh*).
-
-2. Análisis de calidad de muestras descargadas, utilizando las herramientas 'FastQC' y 'Fastqscreen'. Incluye la posibilidad de descargar genomas de referencia de FastQScreen (*qc.sh*).
-
-3. Pre-procesado de las muestras tras observación de análisis de calidad, utilizando las herramientas 'Cutadapt' (incluye adaptadores más comunes en secuenciación Illumina RNA) y 'Trimmomatic' (**TO-DO**) (*pre_proc.sh*).
-
-4. Construcción de Index para las herramientas de alineamiento y pseudoalineamiento utilizadas (STAR, HISAT2, SALMON y KALLISTO (*index.sh*).
-
-5. Alineamiento (o pseudoalineamiento de los reads), con la posibilidad de seguir con workflows anteriores en los que se ha realizado trimming de las mismas. Mismos alineadores anteriormente referidos (*align.sh*).
-
-6. Conteo de los reads y elaboración  de matriz de cuentas, utilizando HTSeq o countFeatures. Se puede realizar sobre los ficheros bam ordenados de STAR, HISAT2 y KALLISTO (*post_proc.sh*).
-
-** NÓTESE QUE, SI BIEN TODOS LOS DIFERENTES SCRIPTS ESTÁN PENSADOS PARA SER CORRIDOS EN CONJUNTO A TRAVÉS DEL MENÚ INTERACTIVO PRESENTE EN *pipeline.sh*, PUEDEN SER CORRIDOS INDEPENDIENTEMENTE. PARA VER LOS ARGUMENTOS NECESARIOS BASTA CON TRATAR DE CORRER CUALQUIERA DE LOS SCRIPTS. **
-
-
 
 #### Apartado 2
 
