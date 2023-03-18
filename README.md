@@ -94,7 +94,9 @@ else
 	if [ ! "$(ls -A $screen_gen)" ]; then
 		echo "No reference genomes could be found."
 		echo -e "\nWould you like to download genome indexes from database?"
-		read -rp "It takes long AND it takes space... (Y/n): " genDownload
+		echo -e "It takes long AND it takes space. Note that if you don't download the references,
+you have to manually curate fastqscreen.conf file and point the program to it" 
+		read -rp "Continue? (Y/n): " genDownload
 		
 		case $genDownload in
 			[Yy]* )
