@@ -9,12 +9,12 @@ YELLOW='\033[1;33m'
 mkdir -p "out/qc/fastqc"
 mkdir -p "out/qc/fastq_screen"
 
-sid=$2
+sid=$1
 base_sid=$(basename "$sid")
 nofastq_sid=$(basename "$sid" .fastq)
 cut_sid=$(basename "$sid" | cut -d"_" -f1)
-fastqc_dir=$3
-fastqscreen_dir=$4
+fastqc_dir=$2
+fastqscreen_dir=$3
 
 # Comprobation for independent use of script
 if [ "$#" -ne 3 ]
