@@ -118,7 +118,7 @@ else
 fi
 ```
 
-3. Pre-procesado de las muestras tras observación de análisis de calidad, utilizando las herramientas 'Cutadapt' (incluye adaptadores más comunes en secuenciación Illumina RNA) y 'Trimmomatic' (**TO-DO**) `pre_proc.sh. Posibilidad de realizar un nuevo QC de las muestras curadas.
+3. Pre-procesado de las muestras tras observación de análisis de calidad, utilizando las herramientas 'Cutadapt' (incluye adaptadores más comunes en secuenciación Illumina RNA) y 'Trimmomatic' (**TO-DO**) `pre_proc.sh`. Posibilidad de realizar un nuevo QC de las muestras curadas.
 ```bash
 if [ "$1" == "cutadapt" ]; then
     
@@ -161,7 +161,7 @@ case $runqc in
 esac
 ```
 
-4. Construcción de Index para las herramientas de alineamiento y pseudoalineamiento utilizadas (STAR, HISAT2, SALMON y KALLISTO `index.sh.
+4. Construcción de Index para las herramientas de alineamiento y pseudoalineamiento utilizadas (STAR, HISAT2, SALMON y KALLISTO `index.sh`.
 ```bash
 # STAR INDEX
 
