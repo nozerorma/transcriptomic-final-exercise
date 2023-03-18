@@ -4,7 +4,7 @@
 
 ### RESOLUCIÓN APARTADO 1
 
-Para responder a las preguntas del apartado 1, se decidió realizar un pipeline interactivo en el cual el usuario, tras introducir una o varias entradas de cualquier muestra en formato SRA, puede ir desarrollando diferentes tareas en función del workflow deseado.
+Para responder a las preguntas del apartado 1, se decidió realizar un pipeline interactivo en el cual el usuario, tras introducir una o varias entradas de cualquier muestra en formato SRA, puede ir desarrollando diferentes tareas en función del workflow deseado. Es necesario tener instalado Conda para la correcta instalación de los diferentes paquetes a utilizar (preferentemente Mamba).
 
 Específicamente, el usuario tiene la posibilidad de:
 
