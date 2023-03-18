@@ -67,7 +67,7 @@ while true; do
 done
 ```
 
-2. Análisis de calidad de muestras descargadas, utilizando las herramientas 'FastQC' y 'Fastqscreen'. Incluye la posibilidad de descargar genomas de referencia de FastQScreen (`qc.sh`).
+2. Análisis de calidad de muestras descargadas, utilizando las herramientas 'FastQC' y 'Fastqscreen'. Incluye la posibilidad de descargar genomas de referencia de FastQScreen `qc.sh`.
 ```bash
 # FASTQC
 	
@@ -118,7 +118,7 @@ else
 fi
 ```
 
-3. Pre-procesado de las muestras tras observación de análisis de calidad, utilizando las herramientas 'Cutadapt' (incluye adaptadores más comunes en secuenciación Illumina RNA) y 'Trimmomatic' (**TO-DO**) (*pre_proc.sh*). Posibilidad de realizar un nuevo QC de las muestras curadas.
+3. Pre-procesado de las muestras tras observación de análisis de calidad, utilizando las herramientas 'Cutadapt' (incluye adaptadores más comunes en secuenciación Illumina RNA) y 'Trimmomatic' (**TO-DO**) `pre_proc.sh. Posibilidad de realizar un nuevo QC de las muestras curadas.
 ```bash
 if [ "$1" == "cutadapt" ]; then
     
@@ -161,7 +161,7 @@ case $runqc in
 esac
 ```
 
-4. Construcción de Index para las herramientas de alineamiento y pseudoalineamiento utilizadas (STAR, HISAT2, SALMON y KALLISTO (*index.sh*).
+4. Construcción de Index para las herramientas de alineamiento y pseudoalineamiento utilizadas (STAR, HISAT2, SALMON y KALLISTO `index.sh.
 ```bash
 # STAR INDEX
 
@@ -209,7 +209,7 @@ elif [ "$1" == "KALLISTO" ]; then
 fi
 ```
 
-5. Alineamiento (o pseudoalineamiento de los reads), con la posibilidad de seguir con workflows anteriores en los que se ha realizado trimming de las mismas. Mismos alineadores anteriormente referidos (*align.sh*). Incluye también conversiónd de ficheros SAM a sorted.BAM, así como estadísitcas de los diferentes estadíos de alineamiento (SAMTOOLS), y extracción de coverage en formato .bw (bamCoverage). 
+5. Alineamiento (o pseudoalineamiento de los reads), con la posibilidad de seguir con workflows anteriores en los que se ha realizado trimming de las mismas. Mismos alineadores anteriormente referidos `align.sh`. Incluye también conversiónd de ficheros SAM a sorted.BAM, así como estadísitcas de los diferentes estadíos de alineamiento (SAMTOOLS), y extracción de coverage en formato .bw (bamCoverage). 
 ```bash
 # First lets see what workflow we are working with
 
