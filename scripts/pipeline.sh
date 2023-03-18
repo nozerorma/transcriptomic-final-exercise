@@ -28,7 +28,29 @@ ___________________________________________________________ ${NC}\n"
 
 # Stop execution when having a non-zero status and trap errors giving line number
 #set -e
-#trap 'printf "${RED}Error at line $LINENO${NC}"' ERR
+trap 'printf "${RED}Error at line $LINENO${NC}"' ERR
+
+# Check if required conda environment is present, else create
+
+if { conda env list | grep 'SRA_pipeline'; } >/dev/null 2>&1; then
+	eval "$(conda shell.bash hook)"
+	conda activate SRA_pipeline
+	echo "Running conda environment: $CONDA_DEFAULT_ENV"
+
+else
+	if [ -d ~/mambaforge ] || [ -d ~/miniforge ]; then
+		(mamba env create -f envs/SRA_pipeline.yaml) & spinner $!
+		eval "$(conda shell.bash hook)"
+		conda activate SRA_pipeline
+		echo "Running conda environment: $CONDA_DEFAULT_ENV"
+	elif [ -d ~/condaforge/ ] || [ -d ~/miniconda ] || [ -d /anaconda3 ]; then
+		(conda env create -f envs/SRA_pipeline.yaml) & spinner $!
+		eval "$(conda shell.bash hook)"
+		conda activate SRA_pipeline
+		echo "Running conda environment: $CONDA_DEFAULT_ENV"
+	fi
+fi
+
 
 # Download samples and references if not exist
 bash scripts/download.sh
