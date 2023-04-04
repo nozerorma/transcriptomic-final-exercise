@@ -34,7 +34,7 @@ if [ "$1" == "cutadapt" ]; then
             -a CTGTCTCTTATACACATCT...AGATGTGTATAAGAGACAG -a TGGAATTCTCGGGTGCCAAGG \
             -a "G{100}" -g "G{100}" -a "A{100}" -g "A{100}" -q 20 \
             -o "$outdir/${f_sid}_trimmed.fastq" -p "$outdir/${r_sid}_trimmed.fastq" \
-            "$f_path" "$r_path" --cores 14 -m 1 --discard-untrimmed > "$logdir"/log.txt)
+            "$f_path" "$r_path" --cores 14 -m 1 > "$logdir"/log.txt)
     fi
 fi
 
