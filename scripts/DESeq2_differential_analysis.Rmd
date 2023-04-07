@@ -10,11 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 ```
 
-## DeSEQ2
+# DeSEQ2
 
 This is an R Markdown document which contains a fully working script for differential analysis of different biological samples. Main objective is to be able to perform the differential analysis both through DeSEQ2 and the other tool whose name I can't remember. 
 
-#### Pregunta 4 (3 puntos): 
+## Pregunta 4 (3 puntos): 
 
 ¿Qué genes se encuentran diferencialmente expresados entre las muestras pertenecientes al grupo tratado con OHT con respecto al control tras 24h? ¿Y en el caso de las muestras tratadas con DPN, también tras 24h? Como parte de la respuesta a esta pregunta, podéis entregar una o más tablas adjuntas donde se incluyan los genes diferencialmente expresados, indicando el criterio o los criterios que habéis seguido para filtrar los resultados, así como cualquier otro gráfico o gráficos que hayáis elaborado durante el análisis.
 
@@ -190,7 +190,10 @@ mat <- assay(vsd)[head(order(results_thresholded_DPN$padj), 30), ]
 pheatmap(mat)
 ```
 
-# RESULTS
+## RESULTS
+
+Given our DGE results, we can assert that, using this concatenating logic for the design/contrast of the experiment, only one DGE can be observed for DPN treatment was DNAJB9 ENSG00000128590 (ERdj4, MDG-1, MDG1, MST049, MSTP049); this number flats to ero when using a threshold = 
+An isolated differential expressed gene can not be representative of any real impact of the drug in the cell expression profile, thus determining that these two treatments have no effect at 24h time. 
 
 ```{r summary_results, echo = FALSE}
 paste0('No. of representative genes for DPN treatment: ', length(which(results_DPN$padj <= 0.05)))
@@ -198,3 +201,4 @@ paste0('No. of representative genes for OHT treatment: ', length(which(results_O
 paste0('No. of representative genes for DPN treatment (threshold = 1): ', length(which(results_thresholded_DPN$padj <= 0.05)))
 paste0('No. of representative genes for OHT treatment (threshold = 1): ', length(which(results_thresholded_OHT$padj <= 0.05)))
 ```
+
