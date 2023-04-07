@@ -2,6 +2,7 @@ PIPEVERSION="1.0 - sra_automatization_pipeline"
 STARTTIME=`date +'%y-%m-%d %H:%M:%S'`
 RUN_ID=`date +"%Y%m%d%H%M%S"`
 
+source "scripts/spinner.sh"
 RED='\033[0;31m' 
 NC='\033[0m' # No Color
 GREEN='\033[0;32m'
@@ -33,20 +34,22 @@ trap 'printf "${RED}Error at line $LINENO${NC}"' ERR
 # Check if required conda environment is present, else create
 
 if { conda env list | grep 'SRA_pipeline'; } >/dev/null 2>&1; then
-	eval "$(conda shell.bash hook)"
-	conda activate SRA_pipeline
+	eval "$(conda shell.bash hook)" >/dev/null 2>&1
+	conda activate SRA_pipeline >/dev/null 2>&1
 	echo "Running conda environment: $CONDA_DEFAULT_ENV"
 
 else
 	if [ -d ~/mambaforge ] || [ -d ~/miniforge ]; then
-		(mamba env create -f envs/SRA_pipeline.yaml) & spinner $!
+		(echo "Creating conda environment: SRA_pipeline"
+		mamba env create -f envs/SRA_pipeline.yaml >/dev/null 2>&1) & spinner $!
 		eval "$(conda shell.bash hook)"
-		conda activate SRA_pipeline
+		conda activate SRA_pipeline >/dev/null 2>&1
 		echo "Running conda environment: $CONDA_DEFAULT_ENV"
 	elif [ -d ~/condaforge/ ] || [ -d ~/miniconda ] || [ -d /anaconda3 ]; then
-		(conda env create -f envs/SRA_pipeline.yaml) & spinner $!
+		(echo "Creating conda environment: SRA_pipeline"
+		conda env create -f envs/SRA_pipeline.yaml >/dev/null 2>&1) & spinner $!
 		eval "$(conda shell.bash hook)"
-		conda activate SRA_pipeline
+		conda activate SRA_pipeline >/dev/null 2>&1
 		echo "Running conda environment: $CONDA_DEFAULT_ENV"
 	fi
 fi
@@ -75,11 +78,10 @@ ${YELLOW}ADVANCED WORKFLOWS INCLUDING PREPROCESSING\n${NC}
 \tWORKFLOW 6 (Toolset: FastQScreen, Cutadapt, HISAT2)\n
 \tWORKFLOW 7 (Toolset: FastQScreen, Cutadapt, SALMON)\n
 \tWORKFLOW 8 (Toolset: FastQScreen, Cutadapt, KALLISTO)\n
-\t${RED}(Trimmomatic workflows not working as of now)${NC}\n
-\tWORKFLOW 9 (Toolset: FastQScreen, Trimmomatic, STAR)\n
-\tWORKFLOW 10 (Toolset: FastQScreen, Trimmomatic, HISAT2)\n
-\tWORKFLOW 11 (Toolset: FastQScreen, Trimmomatic, SALMON)\n
-\tWORKFLOW 12 (Toolset: FastQScreen, Trimmomatic, KALLISTO)\n"
+\tWORKFLOW 9 (Toolset: FastQScreen, Fastp, STAR)\n
+\tWORKFLOW 10 (Toolset: FastQScreen, Fastp, HISAT2)\n
+\tWORKFLOW 11 (Toolset: FastQScreen, Fastp, SALMON)\n
+\tWORKFLOW 12 (Toolset: FastQScreen, Fastp, KALLISTO)\n"
 
 read -rp "Option: " menuOp
 # de repente me ha cambiado la dirección de analisis por la cara!
@@ -165,21 +167,21 @@ Reverse file for $sid: $r_path"
 				fi
 			done
 		;;
-		# for trimmomatic workflows (might remove them or comment them, let's see)
+
 		9 | 10 | 11 | 12 )
 			
-			mkdir -p out/trimmed/trimmomatic/$sid log/trimmed/trimmomatic/$sid
-			trimdir="trimmed/trimmomatic/$sid"
-			bash scripts/pre_proc.sh "trimmomatic" "$f_path" "$r_path" "out/$trimdir" "log/$trimdir"
+			mkdir -p out/trimmed/fastp/$sid log/trimmed/fastp/$sid
+			trimdir="trimmed/fastp/$sid"
+			bash scripts/pre_proc.sh "fastp" "$f_path" "$r_path" "out/$trimdir" "log/$trimdir"
 			
 			if [ "$menuOp" == "9" ]; then
 
 				bash scripts/index.sh "STAR"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir "out/aligned/star_trimmomatic/$sid/$RUN_ID" "log/aligned/star_trimmomatic/$sid/$RUN_ID"
-					outdir="aligned/star_trimmomatic/$sid/$RUN_ID"
-					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
+					mkdir "out/aligned/star_fastp/$sid/$RUN_ID" "log/aligned/star_fastp/$sid/$RUN_ID"
+					outdir="aligned/star_fastp/$sid/$RUN_ID"
+					bash scripts/align.sh "STAR" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "fastp"
 				done
 
 			elif [ "$menuOp" == "10" ]; then
@@ -187,9 +189,9 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "HISAT2"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p "out/aligned/hisat2_trimmomatic/$sid/$RUN_ID" "log/aligned/hisat2_trimmomatic/$sid/$RUN_ID"
-					outdir="aligned/hisat2_trimmomatic/$sid/$RUN_ID"
-					bash scripts/align.sh  "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
+					mkdir -p "out/aligned/hisat2_fastp/$sid/$RUN_ID" "log/aligned/hisat2_fastp/$sid/$RUN_ID"
+					outdir="aligned/hisat2_fastp/$sid/$RUN_ID"
+					bash scripts/align.sh  "HISAT2" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "fastp"
 				done
 
 			elif [ "$menuOp" == "11" ]; then
@@ -197,9 +199,9 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "SALMON"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do
-					mkdir -p "out/aligned/salmon_trimmomatic/$sid/$RUN_ID" "log/aligned/salmon_trimmomatic/$sid/$RUN_ID"
-					outdir="aligned/salmon_trimmomatic/$sid/$RUN_ID"
-					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
+					mkdir -p "out/aligned/salmon_fastp/$sid/$RUN_ID" "log/aligned/salmon_fastp/$sid/$RUN_ID"
+					outdir="aligned/salmon_fastp/$sid/$RUN_ID"
+					bash scripts/align.sh "SALMON" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "fastp"
 				done
 
 			elif [ "$menuOp" == "12" ]; then
@@ -207,9 +209,9 @@ Reverse file for $sid: $r_path"
 				bash scripts/index.sh "KALLISTO"
 
 				for trimmed_sid in $(find "out/$trimdir" -type f -name \*); do				
-					mkdir -p "out/aligned/kallisto_trimmomatic/$sid/$RUN_ID" "log/aligned/kallisto_trimmomatic/$sid/$RUN_ID"
-					outdir="aligned/kallisto_trimmomatic/$sid/$RUN_ID"
-					bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "trimmomatic"
+					mkdir -p "out/aligned/kallisto_fastp/$sid/$RUN_ID" "log/aligned/kallisto_fastp/$sid/$RUN_ID"
+					outdir="aligned/kallisto_fastp/$sid/$RUN_ID"
+					bash scripts/align.sh "KALLISTO" "$f_path" "$r_path" "out/$outdir" "log/$outdir" "fastp"
 				done
 			fi
 		;;

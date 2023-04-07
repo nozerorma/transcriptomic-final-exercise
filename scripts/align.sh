@@ -36,7 +36,7 @@ if [ "$#" -ne 6 ]
 then
     printf "${RED}Usage: $1 <tool> $2 <f_path> $3 <r_path> $4 <outdir> $5 <logdir> $6 <workflow>${NC}\n"
     echo -e 'tool: "STAR", "HISAT2", "SALMON", "KALLISTO"
-workflow: "untrimmed", "cutadapt", "trimmomatic"\n'
+workflow: "untrimmed", "cutadapt", "fastp"\n'
 	exit 1
 fi
 
@@ -47,7 +47,7 @@ sample_dir=0
 if [ "$workflow" == "untrimmed" ]; then
 	sample_dir="$untrimmed_dir"
 
-elif [ "$workflow" == "cutadapt" ] || [ "$workflow" == "trimmomatic" ] ; then
+elif [ "$workflow" == "cutadapt" ] || [ "$workflow" == "fastp" ] ; then
 	sample_dir="$trimmed_dir"
 fi
 
