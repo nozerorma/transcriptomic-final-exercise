@@ -1,0 +1,23 @@
+producer_class	xtools.gsea.GseaPreranked
+producer_timestamp	1680969575089
+param	rpt_label	dpn_24_analysis_gsea
+param	rnd_seed	1998
+param	set_min	15
+param	zip_report	false
+param	create_svgs	true
+param	scoring_scheme	weighted
+param	rnk	/media/miguel/Cuty/transcriptomic-final-exercise/data/input-2/ranked_DPN.rnk
+param	norm	meandiv
+param	out	/media/miguel/Cuty/transcriptomic-final-exercise/dge_reports/GSEA
+param	mode	Median_of_probes
+param	include_only_symbols	false
+param	help	false
+param	set_max	500
+param	gmx	data/input-2/DPN_response.gmt
+param	make_sets	true
+param	plot_top_x	20
+param	gui	false
+param	nperm	1000
+param	collapse	No_Collapse
+
+file	dge_reports/GSEA/dpn_24_analysis_gsea.GseaPreranked.1680969575089/index.html

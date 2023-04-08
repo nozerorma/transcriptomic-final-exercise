@@ -1,5 +1,5 @@
 ---
-title: "Differential analysis"
+title: "Differential analysis and GSEA"
 author: "Miguel Ramón Alonso"
 date: "2023-04-01"
 output: html_document
@@ -10,24 +10,25 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 ```
 
-# DeSEQ2
+## DeSEQ2
 
 This is an R Markdown document which contains a fully working script for differential analysis of different biological samples. Main objective is to be able to perform the differential analysis both through DeSEQ2 and the other tool whose name I can't remember. 
 
-## Pregunta 4 (3 puntos): 
+### Pregunta 4 (3 puntos): 
 
 ¿Qué genes se encuentran diferencialmente expresados entre las muestras pertenecientes al grupo tratado con OHT con respecto al control tras 24h? ¿Y en el caso de las muestras tratadas con DPN, también tras 24h? Como parte de la respuesta a esta pregunta, podéis entregar una o más tablas adjuntas donde se incluyan los genes diferencialmente expresados, indicando el criterio o los criterios que habéis seguido para filtrar los resultados, así como cualquier otro gráfico o gráficos que hayáis elaborado durante el análisis.
 
-```{r libraryload, echo = FALSE, message = FALSE}
+```{r dge_libraryload, echo = FALSE, message = FALSE}
 # Library loading
-library("DESeq2")
-library("pheatmap")
-library("RColorBrewer")
+library(DESeq2)
+library(pheatmap)
+library(RColorBrewer)
 ```
 
 
 ```{r summarizedexperiment}
 # Open both tables as TSV files with header
+set.seed(1998)
 cts <- read.table("data/input-2/rawcounts.tsv", sep = "\t", header = TRUE, row.names = 1)
 metadata <- read.table("data/input-2/metadata.tsv", sep = "\t", header = TRUE, row.names = 1)
 
@@ -190,7 +191,7 @@ mat <- assay(vsd)[head(order(results_thresholded_DPN$padj), 30), ]
 pheatmap(mat)
 ```
 
-## RESULTS
+### DGE RESULTS AT 24H
 
 Given our DGE results, we can assert that, using this concatenating logic for the design/contrast of the experiment, only one DGE can be observed for DPN treatment was DNAJB9 ENSG00000128590 (ERdj4, MDG-1, MDG1, MST049, MSTP049); this number flats to ero when using a threshold = 
 An isolated differential expressed gene can not be representative of any real impact of the drug in the cell expression profile, thus determining that these two treatments have no effect at 24h time. 
@@ -202,3 +203,35 @@ paste0('No. of representative genes for DPN treatment (threshold = 1): ', length
 paste0('No. of representative genes for OHT treatment (threshold = 1): ', length(which(results_thresholded_OHT$padj <= 0.05)))
 ```
 
+### Pregunta 5 (2.5 puntos):
+
+Nuestro colaborador ha comparado las muestras tratadas con DPN tras 48h con las muestras control. Nos ha llamado para contarnos que los cambios de expresión tras 48h son mucho más evidentes y nos preguntamos si el DPN produce algún efecto en las primeras 24h. Para contestar esta pregunta, le pedimos que genere un GMT (input) con los genes más expresados en las muestras tratadas tras 48h (DPN_perturbed) y los genes más expresados en la muestra control (DPN_unperturbed). Realiza un análisis con GSEA para determinar el efecto del tratamiento a las 24h. ¿A qué conclusión llegas? Incluid una tabla con los resultados del análisis, destacando las columnas con los valores utilizados para extraer vuestras conclusiones. También incluid los gráficos característicos de este tipo de análisis.
+
+```{r gsea_libraryload, echo = FALSE, message = FALSE}
+```
+
+In order to answer to our colleague's question, we first need to create the corresponding GCT and CLS objects that we'll then need as input for our GSEA experiment.
+
+As we have clustered results and complex experiment design, we will proceed to use only our DPN results obtained in our previous DGE experiment, with an LFC threshold of 1 (results_thresholded_DPN) 
+```{r input_make}
+# Create ranked object
+# This is not efficient to do, but the object we created before for visualization is not the most comfortable to use for GSEA
+
+results_DPN_gsea <- results(object = dds2,
+                      contrast = c("agent_time", "Control_24h", "DPN_24h"),
+                      alpha = 0.05
+                      )
+
+summary(results_DPN_gsea)
+head(rownames(results_DPN_gsea))
+
+# Make object with named columns
+rnk_dpn <- data.frame(Feature = rownames(results_DPN_gsea), Stat = results_DPN_gsea$stat)
+
+# Write table to file
+rnk_file <- "data/input-2/ranked_DPN.rnk"
+write.table(rnk_dpn, rnk_file, sep = "\t", quote = FALSE, 
+  col.names = FALSE, row.names = FALSE)
+```
+
+# NOTE THAT THIS REPORT MAY BE FOUND IN SCRIPTS DIRECTORY WHEN CREATED
