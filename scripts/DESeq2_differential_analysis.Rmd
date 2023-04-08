@@ -16,10 +16,9 @@ This is an R Markdown document which contains a fully working script for differe
 
 ### Pregunta 4 (3 puntos): 
 
-¿Qué genes se encuentran diferencialmente expresados entre las muestras pertenecientes al grupo tratado con OHT con respecto al control tras 24h? ¿Y en el caso de las muestras tratadas con DPN, también tras 24h? Como parte de la respuesta a esta pregunta, podéis entregar una o más tablas adjuntas donde se incluyan los genes diferencialmente expresados, indicando el criterio o los criterios que habéis seguido para filtrar los resultados, así como cualquier otro gráfico o gráficos que hayáis elaborado durante el análisis.
+What genes are differentially expressed between the samples belonging to the group treated with OHT compared to the control after 24 hours? And in the case of samples treated with DPN, also after 24 hours? As part of the answer to this question, you can provide one or more attached tables including the differentially expressed genes, indicating the criteria used to filter the results, as well as any other graphs that have been generated during the analysis.
 
 ```{r dge_libraryload, echo = FALSE, message = FALSE}
-# Library loading
 library(DESeq2)
 library(pheatmap)
 library(RColorBrewer)
@@ -27,7 +26,7 @@ library(RColorBrewer)
 
 
 ```{r summarizedexperiment}
-# Open both tables as TSV files with header
+# Open both tables as TSV files with header and set a fixed seed for replicacy
 set.seed(1998)
 cts <- read.table("data/input-2/rawcounts.tsv", sep = "\t", header = TRUE, row.names = 1)
 metadata <- read.table("data/input-2/metadata.tsv", sep = "\t", header = TRUE, row.names = 1)
@@ -40,6 +39,7 @@ metadata$time <- factor(metadata$time)
 # Now we'll make a new column containing a concatenation of agent and time, for resolution of #1
 metadata$agent_time <- as.factor(paste(metadata$agent, metadata$time, sep="_"))
 
+# And check if everything worked out
 head(metadata)
 all(rownames(metadata) == colnames(cts))
 all(rownames(metadata) %in% colnames(cts))
@@ -49,9 +49,11 @@ In order to solve the first question in this second part of the exercise, first 
 
 ```{r dds_object}
 # DeSEQ2 object creation
+## Design is set to combine drug and time so we can make the experiment appropriately. 
 dds <- DESeqDataSetFromMatrix(countData = cts,
                                        colData = metadata,
                                        design =~ patient + agent_time)
+# Check
 dds
 summary(dds)
 ```
@@ -59,7 +61,8 @@ summary(dds)
 Pre-processing of the counts is also recommended to remove those reads with too little counts to be considered relevant. To keep consistency with how the sample experiment was performed in class with 'airway' package, we will keep the quality threshold to > 10 counts.
 
 ```{r pre_proc}
-keep <- rowSums(counts(dds)) >= 10 ## Seleccionar genes con más de 10 cuentas en todos los samples
+# Subsample genes with more than 10 counts
+keep <- rowSums(counts(dds)) >= 10 
 dds <- dds[keep, ]
 summary(dds)
 ```
@@ -72,6 +75,7 @@ vsd <- vst(dds, blind = TRUE)
 ```
 
 ```{r vstPCA, echo=FALSE, fig.width=6, fig.asp=1, out.width="100%", fig.align="default"}
+# PCA visualization
 plotPCA(vsd, intgroup = "agent")
 plotPCA(vsd, intgroup = "patient")
 plotPCA(vsd, intgroup = "agent_time")
@@ -96,19 +100,25 @@ pheatmap(sampleDistMatrix,
 After plotting PCA and Distance matrix, an obvious outlier shows up in group 4. Given that we are only going to work with 24h samples in this first part of the analysis, we can remove those from the object. Note that the removal of this outliers depends vastly on how the experiment was performed, in what we are looking to achieve, and the investigator.
 
 ```{r outlier_removal, fig.width=6, fig.asp=1, out.width="100%", fig.align="default"}
+# Now, here we remove completely group 4 due to the outlier. A different assay was performed removing only 24h/Group 4 patients, but results only varied marginally. The outlier was not solely removed as it wouldn't make biological sense. 
 metadata = subset(metadata, patient != 4)
 
+
+# Next we remove those rows with no concordance with metadata
 cts <- cts[, rownames(metadata)]
+
+# Check if it worked out
 all(rownames(metadata) == colnames(cts))
 all(rownames(metadata) %in% colnames(cts))
 
+# And remake our DESeq2 object with our new data
 dds <- DESeqDataSetFromMatrix(countData = cts,
                                        colData = metadata,
                                        design =~ patient + agent_time)
 dds
 summary(dds)
 
-keep <- rowSums(counts(dds)) >= 10 ## Seleccionar genes con más de 10 cuentas en todos los samples
+keep <- rowSums(counts(dds)) >= 10
 dds <- dds[keep, ]
 summary(dds)
 
@@ -130,9 +140,10 @@ pheatmap(sampleDistMatrix,
          col=colors)
 ```
 
-DeSEQ2 
+DESeq2 
 
 ```{r deseq}
+# DESeq2 experiment
 dds2 <- DESeq(dds, test = "Wald")
 plotMA(dds2)
 ```
@@ -148,6 +159,7 @@ results_OHT <- results(object = dds2,
                       )
 mat <- assay(vsd)[head(order(results_OHT$padj), 30), ] 
 pheatmap(mat)
+
 ```
 
 Gene listing for OHT (with log-fold threshold = 1)
@@ -169,7 +181,7 @@ Gene listing for DPN (with no log-fold threshold)
 ```{r results_DPN}
 results_DPN <- results(object = dds2,
                       contrast = c("agent_time", "Control_24h", "DPN_24h"),
-                      alpha = 0.05, # predisponer NUESTRO ERROR, por defecto tiene un 0.1
+                      alpha = 0.05,
                       pAdjustMethod = "BH",
                       tidy = TRUE
                       )
@@ -205,18 +217,14 @@ paste0('No. of representative genes for OHT treatment (threshold = 1): ', length
 
 ### Pregunta 5 (2.5 puntos):
 
-Nuestro colaborador ha comparado las muestras tratadas con DPN tras 48h con las muestras control. Nos ha llamado para contarnos que los cambios de expresión tras 48h son mucho más evidentes y nos preguntamos si el DPN produce algún efecto en las primeras 24h. Para contestar esta pregunta, le pedimos que genere un GMT (input) con los genes más expresados en las muestras tratadas tras 48h (DPN_perturbed) y los genes más expresados en la muestra control (DPN_unperturbed). Realiza un análisis con GSEA para determinar el efecto del tratamiento a las 24h. ¿A qué conclusión llegas? Incluid una tabla con los resultados del análisis, destacando las columnas con los valores utilizados para extraer vuestras conclusiones. También incluid los gráficos característicos de este tipo de análisis.
-
-```{r gsea_libraryload, echo = FALSE, message = FALSE}
-```
+Our collaborator has compared the samples treated with DPN after 48 hours with the control samples. He has called us to report that the expression changes after 48 hours are much more evident, and we wonder if DPN produces any effect in the first 24 hours. To answer this question, we ask him to generate a GMT (input) file with the most expressed genes in the treated samples after 48 hours (DPN_perturbed) and the most expressed genes in the control sample (DPN_unperturbed). Perform a GSEA analysis to determine the effect of treatment at 24 hours. What conclusion do you reach? Include a table with the results of the analysis, highlighting the columns with the values used to extract your conclusions. Also include characteristic graphs of this type of analysis.
 
 In order to answer to our colleague's question, we first need to create the corresponding GCT and CLS objects that we'll then need as input for our GSEA experiment.
 
-As we have clustered results and complex experiment design, we will proceed to use only our DPN results obtained in our previous DGE experiment, with an LFC threshold of 1 (results_thresholded_DPN) 
 ```{r input_make}
 # Create ranked object
-# This is not efficient to do, but the object we created before for visualization is not the most comfortable to use for GSEA
 
+# This is not efficient to do, but the object we created before for visualization is not the most comfortable to use for GSEA
 results_DPN_gsea <- results(object = dds2,
                       contrast = c("agent_time", "Control_24h", "DPN_24h"),
                       alpha = 0.05
@@ -234,4 +242,4 @@ write.table(rnk_dpn, rnk_file, sep = "\t", quote = FALSE,
   col.names = FALSE, row.names = FALSE)
 ```
 
-# NOTE THAT THIS REPORT MAY BE FOUND IN SCRIPTS DIRECTORY WHEN CREATED
+# NOTE THAT THIS REPORT MAY BE FOUND UNDER SCRIPTS DIRECTORY WHEN CREATED
