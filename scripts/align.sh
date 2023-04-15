@@ -1,5 +1,43 @@
 #### ALIGNMENT SCRIPT ####
 
+bamplot_function () {
+		if { conda env list | grep 'gnuplot'; } >/dev/null 2>&1; then
+		eval "$(conda shell.bash hook)" >/dev/null 2>&1
+		conda activate gnuplot >/dev/null 2>&1
+		echo "Running conda environment: $CONDA_DEFAULT_ENV"
+		echo -e "\nPlotting BAM stats..."
+		(plot-bamstats $1 -p $2) & spinner $!
+		eval "$(conda shell.bash hook)" >/dev/null 2>&1
+		conda activate SRA_pipeline >/dev/null 2>&1
+		echo -e "Running conda environment: $CONDA_DEFAULT_ENV \n"
+
+	else
+		if [ -d ~/mambaforge ] || [ -d ~/miniforge ]; then
+			(echo "Creating conda environment: gnuplot"
+			mamba env create -f envs/gnuplot.yaml >/dev/null 2>&1) & spinner $!
+			eval "$(conda shell.bash hook)"
+			conda activate gnuplot >/dev/null 2>&1
+			echo "Running conda environment: $CONDA_DEFAULT_ENV"
+			echo -e "\nPlotting BAM stats..."
+			(plot-bamstats $1 -p $2) & spinner $!
+			eval "$(conda shell.bash hook)" >/dev/null 2>&1
+			conda activate SRA_pipeline >/dev/null 2>&1
+			echo -e "Running conda environment: $CONDA_DEFAULT_ENV \n"
+		elif [ -d ~/condaforge/ ] || [ -d ~/miniconda ] || [ -d /anaconda3 ]; then
+			(echo "Creating conda environment: SRA_pipeline"
+			conda env create -f envs/SRA_pipeline.yaml >/dev/null 2>&1) & spinner $!
+			eval "$(conda shell.bash hook)"
+			conda activate SRA_pipeline >/dev/null 2>&1
+			echo "Running conda environment: $CONDA_DEFAULT_ENV"
+			echo -e "\nPlotting BAM stats..."
+			(plot-bamstats $1 -p $2) & spinner $!
+			eval "$(conda shell.bash hook)" >/dev/null 2>&1
+			conda activate SRA_pipeline >/dev/null 2>&1
+			echo -e "Running conda environment: $CONDA_DEFAULT_ENV \n"
+		fi
+	fi
+}
+
 source "scripts/spinner.sh"
 RED='\033[0;31m' 
 NC='\033[0m' # No Color
@@ -69,7 +107,8 @@ if [ "$1" == "STAR" ]; then
 		(samtools stats "$bam_file" > "$bam_file".txt) & spinner $!
 		(samtools index "$bam_file") & spinner $!
 		(bamCoverage -b "$bam_file" -o "$outdir/$base_sid.bw" --normalizeUsing BPM) & spinner $!
-			# index bam here with samtools
+		
+		bamplot_function "$bam_file.txt" "$outdir/plot-bamstats/stats"
 
 		echo -e "\nSample $base_sid aligned using $tool.\n"
 
@@ -78,7 +117,6 @@ if [ "$1" == "STAR" ]; then
 	mkdir "$outdir/counts"
 	countdir="$outdir/counts"
 	bash scripts/post_proc.sh "$counts" "$bam_file" "$countdir"
-	
 
 # overview from https://bioinfo-dirty-jobs.github.io/rana2//lectures/07.rnaseq_hisat2/
 # HISAT2
@@ -94,6 +132,8 @@ elif [ "$1" == "HISAT2" ]; then
 	(samtools sort --write-index "$outdir/$base_sid.bam" -o "$outdir/$base_sid.sorted.bam") & spinner $!
 	(samtools stats "$outdir/$base_sid.sorted.bam" > "$outdir/$base_sid.sorted.txt") & spinner $!
 	(bamCoverage -b "$outdir/$base_sid.sorted.bam" -o "$outdir/$base_sid.bw" --normalizeUsing BPM) & spinner $!
+	
+	bamplot_function "$outdir/$base_sid.sorted.txt" "$outdir/plot-bamstats/stats"
 
 	# was going to run picard but it has a bunch of incompatibilities
 	# with the tools I'm already using, aborting
@@ -112,8 +152,9 @@ elif [ "$1" == "HISAT2" ]; then
 # -l set as A for automatic guessing of strandness, change accordingly
 elif [ "$1" == "SALMON" ]; then
 		
-	salmon quant -i "$index_dir" -l A -1 "$f_path" -2 "$r_path" --validateMappings \
+	salmon quant -i "$index_dir" -l A -1 "$f_path" -2 "$r_path" \
 		-o "$outdir" -g "$ref_gtf" -p 14 --writeMappings 	
+
 
 # KALLISTO
 # tema de los gtf en ambos, no se si sin meterlo en idx tiene sentido
@@ -127,12 +168,6 @@ elif [ "$1" == "KALLISTO" ]; then
 
 	pseudobam="$outdir/pseudoalignments.bam"
 	(bamCoverage -b "$pseudobam" -o "$outdir/$base_sid.pseudoalignments.bw" \
-	--normalizeUsing BPM 2>&1) & spinner $!	
-	
-	# POST_PROCESSING: READ COUNT
-	read -rp "Which tool would you like to use for feature count? (featurecounts/htseq) " counts
-	mkdir "$outdir/counts/"
-	countdir="$outdir/counts"
-	bash scripts/post_proc.sh "$counts" "$pseudobam" "$countdir"
+	--normalizeUsing BPM 2>&1) & spinner $!
 
 fi

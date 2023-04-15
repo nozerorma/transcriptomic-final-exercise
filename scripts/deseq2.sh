@@ -1,4 +1,5 @@
 #!/bin/bash
+#!/bin/bash
 
 if { conda env list | grep 'SRA_pipeline'; } >/dev/null 2>&1; then
 	eval "$(conda shell.bash hook)" >/dev/null 2>&1
@@ -21,5 +22,6 @@ else
 	fi
 fi
 
-# GSEA analysis
-gsea-cli.sh GSEAPreranked -gmx data/input-2/DPN_response.gmt -collapse No_Collapse -mode Median_of_probes -norm meandiv -nperm 1000 -rnd_seed 1998 -rnk data/input-2/ranked_DPN.rnk -scoring_scheme weighted -rpt_label dpn_24_analysis_gsea -create_svgs true -include_only_symbols false -make_sets true -plot_top_x 20 -set_max 500 -set_min 15 -zip_report false -out dge_reports/GSEA
+# Open-up R env
+
+rstudio DESeq2_differential_analysis.Rproj

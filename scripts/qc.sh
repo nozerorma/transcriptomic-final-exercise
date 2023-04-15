@@ -56,6 +56,14 @@ you have to manually curate fastqscreen.conf file and point the program to it"
 			[Yy]* )
 				echo -e "\nDownloading genomes...\n" 
 				fastq_screen --get_genomes --outdir "res/fastq_screen_samples"
+				
+				echo -e "\nRunning FastQScreen analysis..."
+				mkdir -p $fastqscreen_dir/$cut_sid
+				mkdir -p log/qc
+				(fastq_screen --conf "$screen_gen/fastq_screen.conf" \
+					--tag --aligner bowtie2 --subset 100000 --threads 14 \
+					--outdir "$fastqscreen_dir/$cut_sid" $sid 2>&1 log/qc/fastqscreen.log) & spinner $!
+		echo
 			;;
 			[Nn]* )
 				echo -e "\nSkipping genome download...\n"
